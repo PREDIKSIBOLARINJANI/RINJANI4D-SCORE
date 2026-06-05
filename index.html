@@ -6,44 +6,31 @@
   <meta name="description" content="RINJANI4D — Jadwal & Prediksi Bola Parlay Terpercaya #1 Indonesia" />
   <title>RINJANI4D — Jadwal & Prediksi Bola</title>
 
-  <!-- Favicon -->
   <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>⚽</text></svg>" />
-
-  <!-- Styles -->
   <link rel="stylesheet" href="css/style.css" />
-
-  <!-- Font Awesome (icons) -->
   <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-
-  <!-- Supabase CDN -->
   <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
 </head>
 <body>
 
-  <!-- ══════════════════════════════════════════════════════════
-       NAVBAR — Logo kiri, menu horizontal kanan
-  ══════════════════════════════════════════════════════════ -->
-  <nav class="navbar" role="navigation" aria-label="Main navigation">
-    <a href="index.html" class="nav-logo" aria-label="RINJANI4D Home">
-      <div class="logo-icon" aria-hidden="true">⚽</div>
+  <!-- NAVBAR -->
+  <nav class="navbar">
+    <a href="index.html" class="nav-logo">
+      <div class="logo-icon">⚽</div>
       <span class="logo-text">RINJANI4D</span>
     </a>
-
     <ul class="nav-menu">
-      <li><a href="#tab-jadwal" class="active" onclick="switchTabFromNav('jadwal')"><i class="fas fa-calendar-alt"></i> Jadwal</a></li>
-      <li><a href="#tab-prediksi" onclick="switchTabFromNav('prediksi')"><i class="fas fa-star"></i> Prediksi</a></li>
-      <li><a href="#tab-carousel" onclick="switchTabFromNav('carousel')"><i class="fas fa-futbol"></i> 3D Bola</a></li>
+      <li><a href="#main-tabs" class="active" onclick="switchTabFromNav('jadwal')"><i class="fas fa-calendar-alt"></i> Jadwal</a></li>
+      <li><a href="#main-tabs" onclick="switchTabFromNav('prediksi')"><i class="fas fa-star"></i> Prediksi</a></li>
+      <li><a href="#main-tabs" onclick="switchTabFromNav('carousel')"><i class="fas fa-futbol"></i> 3D Bola</a></li>
       <li><a href="https://rinjani4d.com/daftar" target="_blank" rel="noopener" class="nav-cta"><i class="fas fa-trophy"></i> Daftar</a></li>
     </ul>
   </nav>
 
-  <!-- ══════════════════════════════════════════════════════════
-       BANNER SLIDER
-  ══════════════════════════════════════════════════════════ -->
-  <section class="slider-section" aria-label="Banner promosi">
+  <!-- BANNER SLIDER -->
+  <section class="slider-section">
     <div class="slider-track">
 
-      <!-- Slide 1 -->
       <div class="slide slide-1 active">
         <div class="slide-inner">
           <span class="slide-badge">🏆 Terpercaya #1 Indonesia</span>
@@ -55,7 +42,6 @@
         </div>
       </div>
 
-      <!-- Slide 2 -->
       <div class="slide slide-2">
         <div class="slide-inner">
           <span class="slide-badge">🎯 Akurasi Tinggi</span>
@@ -67,7 +53,6 @@
         </div>
       </div>
 
-      <!-- Slide 3 -->
       <div class="slide slide-3">
         <div class="slide-inner">
           <span class="slide-badge">🔥 Bonus New Member</span>
@@ -79,24 +64,20 @@
         </div>
       </div>
 
-    </div><!-- /slider-track -->
+    </div>
 
-    <!-- Controls -->
-    <button class="slider-btn slider-prev" aria-label="Slide sebelumnya"><i class="fas fa-chevron-left"></i></button>
-    <button class="slider-btn slider-next" aria-label="Slide berikutnya"><i class="fas fa-chevron-right"></i></button>
+    <button class="slider-btn slider-prev"><i class="fas fa-chevron-left"></i></button>
+    <button class="slider-btn slider-next"><i class="fas fa-chevron-right"></i></button>
 
-    <!-- Dots -->
-    <div class="slider-dots" role="tablist" aria-label="Slide indicators">
-      <button class="dot active" role="tab" aria-label="Slide 1"></button>
-      <button class="dot" role="tab" aria-label="Slide 2"></button>
-      <button class="dot" role="tab" aria-label="Slide 3"></button>
+    <div class="slider-dots">
+      <button class="dot active"></button>
+      <button class="dot"></button>
+      <button class="dot"></button>
     </div>
   </section>
 
-  <!-- ══════════════════════════════════════════════════════════
-       MARQUEE / RUNNING TEXT
-  ══════════════════════════════════════════════════════════ -->
-  <div class="marquee-wrap" aria-label="Pengumuman berjalan">
+  <!-- MARQUEE -->
+  <div class="marquee-wrap">
     <div class="marquee-inner">
       <span class="marquee-label"><i class="fas fa-bolt"></i> LIVE</span>
       <div class="marquee-scroll">
@@ -105,50 +86,43 @@
     </div>
   </div>
 
-  <!-- ══════════════════════════════════════════════════════════
-       TAB SYSTEM (SPA — tidak reload halaman)
-  ══════════════════════════════════════════════════════════ -->
+  <!-- TAB SYSTEM -->
   <section class="tabs-section" id="main-tabs">
 
-    <!-- Tab Buttons -->
-    <div class="tab-btns" role="tablist" aria-label="Navigasi konten">
-      <button class="tab-btn active" data-tab="jadwal" role="tab" aria-selected="true">
+    <div class="tab-btns">
+      <button class="tab-btn active" data-tab="jadwal">
         <i class="fas fa-calendar-alt"></i> Jadwal Hari Ini
       </button>
-      <button class="tab-btn" data-tab="prediksi" role="tab" aria-selected="false">
+      <button class="tab-btn" data-tab="prediksi">
         <i class="fas fa-star"></i> Prediksi Parlay
       </button>
-      <button class="tab-btn" data-tab="carousel" role="tab" aria-selected="false">
+      <button class="tab-btn" data-tab="carousel">
         <i class="fas fa-futbol"></i> 3D Bola
       </button>
     </div>
 
-    <!-- ─── TAB 1: JADWAL ─── -->
-    <div class="tab-content active" id="tab-jadwal" role="tabpanel">
-      <!-- Filter liga otomatis (diisi oleh app.js) -->
-      <div id="league-filter-bar" aria-label="Filter liga"></div>
-      <!-- Tabel jadwal (diisi oleh app.js) -->
+    <!-- Tab 1: Jadwal -->
+    <div class="tab-content active" id="tab-jadwal">
+      <div id="league-filter-bar"></div>
       <div id="schedule-container"></div>
     </div>
 
-    <!-- ─── TAB 2: PREDIKSI ─── -->
-    <div class="tab-content" id="tab-prediksi" role="tabpanel">
+    <!-- Tab 2: Prediksi -->
+    <div class="tab-content" id="tab-prediksi">
       <div id="prediction-container"></div>
     </div>
 
-    <!-- ─── TAB 3: 3D CAROUSEL ─── -->
-    <div class="tab-content" id="tab-carousel" role="tabpanel">
-      <div class="carousel-scene" aria-label="Animasi 3D bola klub">
+    <!-- Tab 3: 3D Carousel -->
+    <div class="tab-content" id="tab-carousel">
+      <div class="carousel-scene">
         <div id="carousel-track"></div>
         <p class="carousel-hint"><i class="fas fa-sync-alt"></i> Efek 3D Klub Dunia</p>
       </div>
     </div>
 
-  </section><!-- /tabs-section -->
+  </section>
 
-  <!-- ══════════════════════════════════════════════════════════
-       FOOTER
-  ══════════════════════════════════════════════════════════ -->
+  <!-- FOOTER -->
   <footer class="footer">
     <div class="footer-logo">RINJANI4D</div>
     <p class="footer-text">Jadwal &amp; Prediksi Bola Parlay Terpercaya</p>
@@ -158,23 +132,18 @@
     </p>
   </footer>
 
-  <!-- ══════════════════════════════════════════════════════════
-       SCRIPTS — config.js WAJIB pertama
-  ══════════════════════════════════════════════════════════ -->
+  <!-- SCRIPTS -->
   <script src="js/config.js"></script>
   <script src="js/app.js"></script>
-
-  <!-- Helper: switchTabFromNav untuk link navbar -->
   <script>
     function switchTabFromNav(tabName) {
       document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
       document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      const btn = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
+      const btn     = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
       const content = document.getElementById(`tab-${tabName}`);
-      if (btn) btn.classList.add('active');
+      if (btn)     btn.classList.add('active');
       if (content) content.classList.add('active');
       if (tabName === 'carousel') triggerCarouselAnim();
-      // Scroll ke tab
       document.getElementById('main-tabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
     }
   </script>
