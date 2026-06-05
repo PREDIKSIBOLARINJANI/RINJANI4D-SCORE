@@ -1,152 +1,527 @@
 <!DOCTYPE html>
 <html lang="id">
 <head>
-  <meta charset="UTF-8" />
-  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
-  <meta name="description" content="RINJANI4D — Jadwal & Prediksi Bola Parlay Terpercaya #1 Indonesia" />
-  <title>RINJANI4D — Jadwal & Prediksi Bola</title>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RINJANI4D — Analisa & Prediksi Bola</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
+    <style>
+        /* ========================================
+           CORE STYLE - RINJANI4D (PERBAIKAN FINAL)
+           ========================================
+        */
 
-  <link rel="icon" href="data:image/svg+xml,<svg xmlns='http://www.w3.org/2000/svg' viewBox='0 0 32 32'><text y='28' font-size='28'>⚽</text></svg>" />
-  <link rel="stylesheet" href="css/style.css" />
-  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
-  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+        /* 1. RESET & DASAR */
+        * { 
+            margin: 0; 
+            padding: 0; 
+            box-sizing: border-box; 
+        }
+
+        body { 
+            font-family: 'Barlow', sans-serif; 
+            color: white; 
+            overflow-x: hidden; 
+            min-height: 100vh;
+            background: #000;
+        }
+
+        /* 2. FIX BACKGROUND UTAMA */
+        body::before {
+            content: ""; 
+            position: fixed; 
+            top: 0; 
+            left: 0; 
+            width: 100%; 
+            height: 100%;
+            background: url('https://i.imgur.com/zGbaikU.jpeg') no-repeat center center;
+            background-size: cover;
+            z-index: -2; 
+            filter: brightness(0.4);
+        }
+
+        .bg-overlay { 
+            position: fixed; 
+            inset: 0; 
+            background: rgba(0, 0, 0, 0.5); 
+            z-index: -1; 
+        }
+
+        /* 3. HEADER & MENU NAVIGATION */
+        header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px 20px; 
+            background: rgba(0, 0, 0, 0.9); 
+            border-bottom: 2px solid #ffd700; 
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .logo img { height: 45px; width: auto; object-fit: contain; }
+
+        /* BURGER ICON */
+        .menu-container { position: relative; }
+        .burger { cursor: pointer; padding: 5px; }
+        .burger span {
+            display: block; width: 25px; height: 3px; margin: 5px 0;
+            background: #ffd700; border-radius: 2px;
+        }
+
+        /* DROPDOWN MENU */
+        .dropdown-card {
+            display: none; 
+            position: absolute; 
+            top: 50px; 
+            right: 0;
+            background: rgba(17, 17, 17, 0.95); 
+            border: 1px solid #ffd700;
+            border-radius: 8px; 
+            width: 160px; 
+            flex-direction: column; 
+            backdrop-filter: blur(10px);
+        }
+        .dropdown-card.active { display: flex; }
+        .dropdown-card a {
+            color: white; 
+            text-decoration: none; 
+            padding: 12px 15px;
+            font-size: 14px; 
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .dropdown-card a:hover { background: #ffd700; color: #000; }
+
+        /* 4. RUNNING TEXT (MARQUEE) */
+        .marquee-container { 
+            background: #b32e2e; 
+            height: 35px; 
+            display: flex; 
+            align-items: center; 
+            border-bottom: 2px solid #ffd700; 
+        }
+        .marquee-content { width: 100%; }
+        .marquee-content marquee { font-weight: 600; font-size: 14px; color: #fff; display: block; }
+
+        /* 5. BANNER SLIDER */
+        .banner-slider { 
+            width: 100%; 
+            position: relative; 
+            overflow: hidden; 
+            aspect-ratio: 21 / 9; 
+            border-bottom: 2px solid #ffd700;
+        }
+        @media (max-width: 768px) {
+            .banner-slider { aspect-ratio: 16 / 9; }
+        }
+        .slider-wrapper { display: flex; transition: transform 0.6s ease-in-out; height: 100%; }
+        .slide { min-width: 100%; height: 100%; }
+        .slide img { 
+            width: 100%; height: 100%; 
+            object-fit: cover; 
+            object-position: center; 
+        }
+
+        .prev-btn, .next-btn {
+            position: absolute; top: 50%; transform: translateY(-50%);
+            background: rgba(0, 0, 0, 0.5); color: #ffd700; border: none;
+            font-size: 24px; padding: 10px; cursor: pointer; z-index: 5;
+        }
+        .next-btn { right: 0; }
+        .prev-btn { left: 0; }
+
+        /* 6. TAB FILTER LIGA */
+        .tab-filter { 
+            display: flex; 
+            gap: 10px; 
+            margin-bottom: 15px; 
+            overflow-x: auto; 
+            padding-bottom: 10px;
+            scrollbar-width: none; 
+        }
+        .tab-filter::-webkit-scrollbar { display: none; }
+
+        .tab-btn {
+            background: rgba(255, 255, 255, 0.1);
+            color: white;
+            border: 1px solid #ffd700;
+            padding: 8px 18px;
+            border-radius: 20px;
+            cursor: pointer;
+            font-weight: 700;
+            font-size: 12px;
+            white-space: nowrap;
+            transition: 0.3s;
+        }
+        .tab-btn.active { 
+            background: #ffd700; 
+            color: #000; 
+        }
+
+        /* 7. TABEL JADWAL */
+        .schedule-section { padding: 25px 20px; max-width: 1100px; margin: auto; }
+        .section-title { font-weight: 800; color: #ffd700; margin-bottom: 15px; border-left: 4px solid #ffd700; padding-left: 15px; }
+
+        .table-container { 
+            background: rgba(0, 0, 0, 0.7); 
+            backdrop-filter: blur(8px); 
+            border-radius: 12px; 
+            overflow-x: auto; 
+            border: 1px solid rgba(255, 215, 0, 0.3); 
+            margin-bottom: 30px;
+        }
+        table { width: 100%; border-collapse: collapse; min-width: 600px; }
+        th { background: rgba(255, 215, 0, 0.2); color: #ffd700; padding: 15px; text-align: left; font-size: 13px; }
+        td { padding: 15px; border-bottom: 1px solid rgba(255, 255, 255, 0.1); font-size: 14px; }
+
+        /* 8. KARTU PREDIKSI */
+        .match-grid { 
+            display: grid; 
+            grid-template-columns: repeat(auto-fit, minmax(300px, 1fr)); 
+            gap: 20px; 
+            padding: 20px; 
+            max-width: 1100px; 
+            margin: auto; 
+        }
+        .match-grid .card { 
+            background: rgba(0, 0, 0, 0.65); 
+            backdrop-filter: blur(8px); 
+            padding: 25px; 
+            border-radius: 15px; 
+            text-align: center; 
+            border: 1px solid rgba(255, 215, 0, 0.2); 
+            transition: 0.3s;
+        }
+        .match-grid .card:hover { border-color: #ffd700; transform: translateY(-5px); }
+
+        .teams { display: flex; justify-content: space-between; align-items: center; margin-bottom: 15px; }
+        .team { flex: 1; }
+        .team img { 
+            width: 60px; height: 60px; 
+            object-fit: contain; 
+            border: 2px solid #ffd700; 
+            border-radius: 50%; 
+            background: rgba(255, 255, 255, 0.1); 
+            padding: 5px; 
+            margin-bottom: 5px;
+        }
+        .vs { font-size: 22px; font-weight: 800; color: #ffd700; padding: 0 10px; }
+        .score { font-size: 35px; font-weight: 700; margin: 10px 0; color: #fff; }
+
+        /* TOMBOL SALIN */
+        .copy-btn {
+            background: transparent;
+            color: #ffd700;
+            border: 1px dashed #ffd700;
+            padding: 6px 12px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 11px;
+            font-weight: 600;
+            margin-bottom: 15px;
+            transition: 0.3s;
+        }
+        .copy-btn:hover { background: rgba(255, 215, 0, 0.1); }
+
+        .card-btn { 
+            display: block; 
+            background: #ffd700; 
+            color: #000; 
+            text-decoration: none; 
+            padding: 12px; 
+            border-radius: 8px; 
+            font-weight: 800; 
+            transition: 0.3s;
+        }
+        .card-btn:hover { background: #fff; }
+
+        /* 9. FLOATING BUTTON & DOTS */
+        .floating { 
+            position: fixed; 
+            bottom: 20px; 
+            right: 20px; 
+            background: #ffd700; 
+            color: #000; 
+            padding: 15px 25px; 
+            border-radius: 50px; 
+            text-decoration: none; 
+            font-weight: 800; 
+            z-index: 100; 
+            box-shadow: 0 4px 15px rgba(255, 215, 0, 0.4); 
+        }
+
+        .dots-container { position: absolute; bottom: 10px; left: 50%; transform: translateX(-50%); display: flex; gap: 8px; }
+        .dot { width: 10px; height: 10px; background: rgba(255,255,255,0.3); border-radius: 50%; cursor: pointer; transition: 0.3s; }
+        .dot.active { background: #ffd700; width: 25px; border-radius: 10px; }
+
+        /* ========================================
+           10. PERBAIKAN FITUR 3D CAROUSEL (ANTI-BENTROK)
+           ========================================
+        */
+        .page {
+            width: 100%;
+            overflow: hidden;
+            padding: 20px 0;
+        }
+        .scene {
+            width: 160px;  
+            height: 230px; 
+            margin: 50px auto 70px auto;
+            perspective: 1000px;
+        }
+        .a3d {
+            width: 100%; height: 100%; position: relative;
+            transform-style: preserve-3d;
+            animation: rotate 25s linear infinite;
+        }
+        
+        /* Selektor diubah spesifik agar tidak tabrakan dengan .card prediksi */
+        .a3d img.carousel-img {
+            position: absolute; 
+            width: 100%; 
+            height: 100%;
+            padding: 0 !important; 
+            background: none !important; 
+            border-radius: 10px; 
+            object-fit: cover;
+            border: 2px solid #ffd700;
+            box-shadow: 0 5px 15px rgba(255, 215, 0, 0.3);
+            transform: rotateY(calc(var(--i) * (360deg / var(--n)))) translateZ(280px);
+        }
+        @keyframes rotate {
+            from { transform: rotateY(0deg); }
+            to { transform: rotateY(360deg); }
+        }
+
+        /* Pesan loading data */
+        .loading-text { text-align: center; color: #ffd700; padding: 20px; font-weight: bold; }
+    </style>
 </head>
 <body>
 
-  <!-- NAVBAR -->
-  <nav class="navbar">
-    <a href="index.html" class="nav-logo">
-      <div class="logo-icon">⚽</div>
-      <span class="logo-text">RINJANI4D</span>
-    </a>
-    <ul class="nav-menu">
-      <li><a href="#main-tabs" class="active" onclick="switchTabFromNav('jadwal')"><i class="fas fa-calendar-alt"></i> Jadwal</a></li>
-      <li><a href="#main-tabs" onclick="switchTabFromNav('prediksi')"><i class="fas fa-star"></i> Prediksi</a></li>
-      <li><a href="#main-tabs" onclick="switchTabFromNav('carousel')"><i class="fas fa-futbol"></i> 3D Bola</a></li>
-      <li><a href="https://rinjani4d.com/daftar" target="_blank" rel="noopener" class="nav-cta"><i class="fas fa-trophy"></i> Daftar</a></li>
-    </ul>
-  </nav>
+<div class="bg-overlay"></div>
 
-  <!-- BANNER SLIDER -->
-  <section class="slider-section">
-    <div class="slider-track">
-
-      <div class="slide slide-1 active">
-        <div class="slide-inner">
-          <span class="slide-badge">🏆 Terpercaya #1 Indonesia</span>
-          <h2>Prediksi Parlay Akurat Setiap Hari</h2>
-          <p>Jadwal lengkap & analisis mendalam untuk kemenangan maksimal</p>
-          <a href="https://rinjani4d.com/daftar" target="_blank" rel="noopener" class="slide-btn">
-            <i class="fas fa-rocket"></i> Bergabung Sekarang
-          </a>
+<header>
+    <div class="logo">
+        <img src="https://i.imgur.com/DuwlIfJ.png" alt="Logo RINJANI4D">
+    </div>
+    <div class="menu-container">
+        <div class="burger" id="burger">
+            <span></span><span></span><span></span>
         </div>
-      </div>
-
-      <div class="slide slide-2">
-        <div class="slide-inner">
-          <span class="slide-badge">🎯 Akurasi Tinggi</span>
-          <h2>Prediksi Skor Jitu Premier League</h2>
-          <p>Update setiap hari — jangan sampai ketinggalan jadwal malam ini</p>
-          <a href="https://rinjani4d.com/daftar" target="_blank" rel="noopener" class="slide-btn">
-            <i class="fas fa-futbol"></i> Lihat Prediksi
-          </a>
+        <div class="dropdown-card" id="dropdownCard">
+            <a href="https://rinjaniman.com">Login</a>
+            <a href="https://rinjaniman.com/register">Daftar</a>
+            <a href="https://rinjani-game-world--colombogelap.replit.app">Profil</a>
         </div>
-      </div>
+    </div>
+</header>
 
-      <div class="slide slide-3">
-        <div class="slide-inner">
-          <span class="slide-badge">🔥 Bonus New Member</span>
-          <h2>Bonus Sambutan Menanti Anda</h2>
-          <p>Daftar sekarang & dapatkan bonus eksklusif untuk member baru</p>
-          <a href="https://rinjani4d.com/daftar" target="_blank" rel="noopener" class="slide-btn">
-            <i class="fas fa-gift"></i> Klaim Bonus
-          </a>
+<div class="marquee-container">
+    <div class="marquee-content">
+        <marquee scrollamount="5">📢 RINJANI4D: Prediksi Terakurat Hari Ini! Update Jadwal Liga Inggris, UCL, dan Liga 1 Secara Real-Time.</marquee>
+    </div>
+</div>
+
+<section class="banner-slider">
+    <div class="slider-wrapper" id="slider">
+        <div class="slide"><img src="https://i.imgur.com/VDY1cAE.png" alt="Banner 1"></div>
+        <div class="slide"><img src="https://i.imgur.com/NiAhn45.png" alt="Banner 2"></div>
+        <div class="slide"><img src="https://i.imgur.com/HEy90o8.png" alt="Banner 3"></div>
+        <div class="slide"><img src="https://i.imgur.com/ebLmmYA.png" alt="Banner 4"></div>
+        <div class="slide"><img src="https://i.imgur.com/GZux8Ft.png" alt="Banner 5"></div>
+    </div>
+    <button class="prev-btn" id="prevBtn">&#10094;</button>
+    <button class="next-btn" id="nextBtn">&#10095;</button>
+    <div class="dots-container" id="dotsContainer"></div>
+</section>
+
+<section class="schedule-section">
+    <div class="section-title">📊 ANALISA PELUANG (H | D | A)</div>
+    
+    <div class="tab-filter" id="tabFilter">
+        <button class="tab-btn active" onclick="filterLeague('ALL')">SEMUA</button>
+        <button class="tab-btn" onclick="filterLeague('EPL')">EPL</button>
+        <button class="tab-btn" onclick="filterLeague('UCL')">UCL</button>
+        <button class="tab-btn" onclick="filterLeague('LIGA 1')">LIGA 1</button>
+    </div>
+
+    <div class="table-container">
+        <table>
+            <thead>
+                <tr>
+                    <th>Waktu</th>
+                    <th>Liga</th>
+                    <th>Pertandingan</th>
+                    <th>Win Prob (%)</th>
+                </tr>
+            </thead>
+            <tbody id="scheduleBody">
+                <tr><td colspan="4" class="loading-text">Memuat Jadwal Terkini...</td></tr>
+            </tbody>
+        </table>
+    </div>
+
+    <div class="page">
+        <div class="scene">    
+            <div class="a3d" style="--n: 14">      
+                <img class="carousel-img" style="--i: 0"  src="https://i.imgur.com/pCUtUHZ.png" alt="Slide 1">      
+                <img class="carousel-img" style="--i: 1"  src="https://i.imgur.com/0Z8hrM9.png" alt="Slide 2">      
+                <img class="carousel-img" style="--i: 2"  src="https://i.imgur.com/HCEh6GQ.png" alt="Slide 3">      
+                <img class="carousel-img" style="--i: 3"  src="https://i.imgur.com/RAkBKqj.png" alt="Slide 4">      
+                <img class="carousel-img" style="--i: 4"  src="https://i.imgur.com/GRTGwgy.png" alt="Slide 5">      
+                <img class="carousel-img" style="--i: 5"  src="https://i.imgur.com/ZZ52hFX.png" alt="Slide 6">      
+                <img class="carousel-img" style="--i: 6"  src="https://i.imgur.com/ZZ52hFX.png" alt="Slide 7">      
+                <img class="carousel-img" style="--i: 7"  src="https://i.imgur.com/Q3alshL.png" alt="Slide 8">      
+                <img class="carousel-img" style="--i: 8"  src="https://i.imgur.com/jfvL5X4.png" alt="Slide 9">      
+                <img class="carousel-img" style="--i: 9"  src="https://i.imgur.com/oNwcHez.png" alt="Slide 10">      
+                <img class="carousel-img" style="--i: 10" src="https://i.imgur.com/d8dSp1P.png" alt="Slide 11">      
+                <img class="carousel-img" style="--i: 11" src="https://i.imgur.com/Mg7WTwT.png" alt="Slide 12">
+                <img class="carousel-img" style="--i: 12" src="https://i.imgur.com/yYVcOJb.png" alt="Slide 13">
+                <img class="carousel-img" style="--i: 13" src="https://i.imgur.com/DBahwmx.png" alt="Slide 14">
+            </div>  
         </div>
-      </div>
-
     </div>
+</section>
 
-    <button class="slider-btn slider-prev"><i class="fas fa-chevron-left"></i></button>
-    <button class="slider-btn slider-next"><i class="fas fa-chevron-right"></i></button>
+<main id="matches" class="match-grid">
+    <div style="grid-column: 1/-1;" class="loading-text">Memuat Kartu Prediksi...</div>
+</main>
 
-    <div class="slider-dots">
-      <button class="dot active"></button>
-      <button class="dot"></button>
-      <button class="dot"></button>
-    </div>
-  </section>
+<a href="https://rinjaniman.com" target="_blank" class="floating">MAIN SEKARANG</a>
 
-  <!-- MARQUEE -->
-  <div class="marquee-wrap">
-    <div class="marquee-inner">
-      <span class="marquee-label"><i class="fas fa-bolt"></i> LIVE</span>
-      <div class="marquee-scroll">
-        <span id="marquee-text"></span>
-      </div>
-    </div>
-  </div>
+<!-- MEMANGGIL FILE KONFIGURASI SUPABASE -->
+<script src="js/config.js"></script>
 
-  <!-- TAB SYSTEM -->
-  <section class="tabs-section" id="main-tabs">
+<script>
+// --- VARIABEL UTAMA DATA DARI SUPABASE ---
+let schedules = [];
+let matchResults = [];
 
-    <div class="tab-btns">
-      <button class="tab-btn active" data-tab="jadwal">
-        <i class="fas fa-calendar-alt"></i> Jadwal Hari Ini
-      </button>
-      <button class="tab-btn" data-tab="prediksi">
-        <i class="fas fa-star"></i> Prediksi Parlay
-      </button>
-      <button class="tab-btn" data-tab="carousel">
-        <i class="fas fa-futbol"></i> 3D Bola
-      </button>
-    </div>
+// --- FUNGSI MENGAMBIL DATA DARI SUPABASE API ---
+async function fetchDataFromSupabase() {
+    try {
+        // 1. Ambil Data Jadwal
+        const resSchedule = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/schedules?select=*`, {
+            headers: {
+                "apikey": CONFIG.SUPABASE_ANON_KEY,
+                "Authorization": `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+            }
+        });
+        schedules = await resSchedule.json();
 
-    <!-- Tab 1: Jadwal -->
-    <div class="tab-content active" id="tab-jadwal">
-      <div id="league-filter-bar"></div>
-      <div id="schedule-container"></div>
-    </div>
+        // 2. Ambil Data Prediksi Kartu
+        const resPredictions = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/predictions?select=*`, {
+            headers: {
+                "apikey": CONFIG.SUPABASE_ANON_KEY,
+                "Authorization": `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
+            }
+        });
+        matchResults = await resPredictions.json();
 
-    <!-- Tab 2: Prediksi -->
-    <div class="tab-content" id="tab-prediksi">
-      <div id="prediction-container"></div>
-    </div>
+        // Jalankan render setelah data berhasil didapatkan
+        filterLeague('ALL');
+        renderCards();
 
-    <!-- Tab 3: 3D Carousel -->
-    <div class="tab-content" id="tab-carousel">
-      <div class="carousel-scene">
-        <div id="carousel-track"></div>
-        <p class="carousel-hint"><i class="fas fa-sync-alt"></i> Efek 3D Klub Dunia</p>
-      </div>
-    </div>
-
-  </section>
-
-  <!-- FOOTER -->
-  <footer class="footer">
-    <div class="footer-logo">RINJANI4D</div>
-    <p class="footer-text">Jadwal &amp; Prediksi Bola Parlay Terpercaya</p>
-    <p class="footer-disclaimer">
-      Situs ini hanya menyediakan informasi jadwal dan prediksi untuk hiburan.
-      Bermainlah dengan bertanggung jawab. 18+.
-    </p>
-  </footer>
-
-  <!-- SCRIPTS -->
-  <script src="js/config.js"></script>
-  <script src="js/app.js"></script>
-  <script>
-    function switchTabFromNav(tabName) {
-      document.querySelectorAll('.tab-btn').forEach(b => b.classList.remove('active'));
-      document.querySelectorAll('.tab-content').forEach(c => c.classList.remove('active'));
-      const btn     = document.querySelector(`.tab-btn[data-tab="${tabName}"]`);
-      const content = document.getElementById(`tab-${tabName}`);
-      if (btn)     btn.classList.add('active');
-      if (content) content.classList.add('active');
-      if (tabName === 'carousel') triggerCarouselAnim();
-      document.getElementById('main-tabs')?.scrollIntoView({ behavior: 'smooth', block: 'start' });
+    } catch (error) {
+        console.error("Gagal mengambil data database Supabase:", error);
+        document.getElementById('scheduleBody').innerHTML = `<tr><td colspan="4" style="color:#b32e2e; text-align:center;">Gagal memuat data jadwal.</td></tr>`;
     }
-  </script>
+}
 
+// --- FUNGSI BURGER MENU ---
+const burger = document.getElementById('burger');
+const dropdownCard = document.getElementById('dropdownCard');
+
+burger.addEventListener('click', (e) => {
+    dropdownCard.classList.toggle('active');
+    e.stopPropagation();
+});
+
+document.addEventListener('click', () => dropdownCard.classList.remove('active'));
+
+// --- FUNGSI FILTER LIGA ---
+function filterLeague(league) {
+    const btns = document.querySelectorAll('.tab-btn');
+    btns.forEach(btn => {
+        btn.classList.remove('active');
+        if(btn.textContent === league || (league === 'ALL' && btn.textContent === 'SEMUA')) btn.classList.add('active');
+    });
+
+    const filtered = league === 'ALL' ? schedules : schedules.filter(s => s.league.toUpperCase() === league.toUpperCase());
+    renderTable(filtered);
+}
+
+function renderTable(data) {
+    const body = document.getElementById('scheduleBody');
+    if(data.length === 0) {
+        body.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#aaa;">Tidak ada jadwal tersedia.</td></tr>`;
+        return;
+    }
+    body.innerHTML = data.map(s => `
+        <tr>
+            <td>${s.time} WIB</td>
+            <td style="color:#ffd700; font-weight:bold;">${s.league}</td>
+            <td>${s.match}</td>
+            <td style="font-family:'Barlow Condensed'; font-weight:800; color:#ffd700;">${s.prob || 'H 0% | D 0% | A 0%'}</td>
+        </tr>
+    `).join('');
+}
+
+// --- FUNGSI SALIN PREDIKSI ---
+function copyMatch(text) {
+    navigator.clipboard.writeText(text).then(() => {
+        alert("Prediksi Berhasil Disalin!");
+    });
+}
+
+function renderCards() {
+    const container = document.getElementById('matches');
+    if(matchResults.length === 0) {
+        container.innerHTML = `<div style="grid-column: 1/-1;" class="loading-text">Belum ada kartu prediksi hari ini.</div>`;
+        return;
+    }
+    container.innerHTML = matchResults.map(m => `
+        <div class="card">
+            <div class="teams">
+                <div class="team"><img src="${m.home_logo || 'https://via.placeholder.com/60'}"><p>${m.home}</p></div>
+                <div class="vs">VS</div>
+                <div class="team"><img src="${m.away_logo || 'https://via.placeholder.com/60'}"><p>${m.away}</p></div>
+            </div>
+            <div class="score">${m.score || '?-?'}</div>
+            <button class="copy-btn" onclick="copyMatch('Prediksi ${m.home} vs ${m.away}: Skor ${m.score} - Analisa by RINJANI4D')">
+                📋 Salin Prediksi
+            </button>
+            <a href="https://rinjaniman.com" class="card-btn">PASANG SEKARANG</a>
+        </div>
+    `).join('');
+}
+
+// --- SLIDER LOGIC ---
+let idx = 0;
+const slider = document.getElementById('slider');
+const slides = document.querySelectorAll('.slide');
+const dotsContainer = document.getElementById('dotsContainer');
+
+slides.forEach((_, i) => {
+    const d = document.createElement('div');
+    d.className = 'dot' + (i === 0 ? ' active' : '');
+    d.addEventListener('click', () => move(i));
+    dotsContainer.appendChild(d);
+});
+
+function move(n) {
+    idx = n;
+    slider.style.transform = `translateX(-${idx * 100}%)`;
+    document.querySelectorAll('.dot').forEach((d, i) => d.className = 'dot' + (i === idx ? ' active' : ''));
+}
+
+document.getElementById('nextBtn').onclick = () => move((idx + 1) % slides.length);
+document.getElementById('prevBtn').onclick = () => move((idx - 1 + slides.length) % slides.length);
+setInterval(() => move((idx + 1) % slides.length), 3000);
+
+// Menjalankan penarikan data database saat pertama kali dibuka
+fetchDataFromSupabase();
+</script>
 </body>
 </html>
