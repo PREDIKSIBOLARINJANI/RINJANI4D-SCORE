@@ -669,29 +669,14 @@
         <!-- Row 3: Logo Upload -->
         <div class="form-grid form-grid-2">
           <div class="form-group">
-            <label>Logo Tim Tuan Rumah</label>
-            <div class="file-upload-area" onclick="document.getElementById('j-home-file').click()">
-              <input type="file" id="j-home-file" accept="image/*" onchange="handleLogoUpload(this,'j-home-preview','j-home-name','j-home-b64')">
-              <div class="file-upload-label">📁 Klik untuk pilih gambar<br><span>PNG / JPG / WebP</span></div>
-            </div>
-            <div class="logo-preview-wrap">
-              <img id="j-home-preview" class="logo-preview-img">
-              <span id="j-home-name" class="logo-preview-name"></span>
-            </div>
+            <label>URL Logo Tim Tuan Rumah (Opsional)</label>
+            <input type="text" id="j-home-b64" placeholder="Contoh: https://site.com/logo-home.png" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; color:#fff; border-radius:6px; font-size:14px;">
           </div>
           <div class="form-group">
-            <label>Logo Tim Tamu</label>
-            <div class="file-upload-area" onclick="document.getElementById('j-away-file').click()">
-              <input type="file" id="j-away-file" accept="image/*" onchange="handleLogoUpload(this,'j-away-preview','j-away-name','j-away-b64')">
-              <div class="file-upload-label">📁 Klik untuk pilih gambar<br><span>PNG / JPG / WebP</span></div>
-            </div>
-            <div class="logo-preview-wrap">
-              <img id="j-away-preview" class="logo-preview-img">
-              <span id="j-away-name" class="logo-preview-name"></span>
-            </div>
+            <label>URL Logo Tim Tamu (Opsional)</label>
+            <input type="text" id="j-away-b64" placeholder="Contoh: https://site.com/logo-away.png" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; color:#fff; border-radius:6px; font-size:14px;">
           </div>
         </div>
-
         <!-- Hidden b64 holders -->
         <input type="hidden" id="j-home-b64">
         <input type="hidden" id="j-away-b64">
@@ -1066,34 +1051,6 @@ function getLeagueValue(prefix) {
 // ═══════════════════════════════════════════
 // UTILITY: LOGO UPLOAD → BASE64
 // ═══════════════════════════════════════════
-function handleLogoUpload(input, previewId, nameId, hiddenId) {
-  const file = input.files[0];
-  if (!file) return;
-
-  // Validasi ukuran (max 1MB)
-  if (file.size > 1024 * 1024) {
-    toast('Ukuran gambar maksimal 1MB!', 'error');
-    input.value = '';
-    return;
-  }
-
-  const reader = new FileReader();
-  reader.onload = function(e) {
-    const b64 = e.target.result; // string base64 data URL
-
-    // Preview
-    const img = document.getElementById(previewId);
-    img.src = b64;
-    img.style.display = 'block';
-
-    // Nama file
-    document.getElementById(nameId).textContent = file.name;
-
-    // Simpan ke hidden input
-    document.getElementById(hiddenId).value = b64;
-  };
-  reader.readAsDataURL(file);
-}
 
 // Helper: render logo cell di tabel
 function renderLogoCell(logoSrc, name) {
@@ -1226,18 +1183,6 @@ function resetJadwalForm() {
   });
   document.getElementById('j-league').value = 'EPL';
   document.getElementById('j-custom-wrap').style.display = 'none';
-  ['j-home-preview','j-away-preview'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.style.display = 'none'; el.src = ''; }
-  });
-  ['j-home-name','j-away-name'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = '';
-  });
-  ['j-home-file','j-away-file'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
 }
 
 // ═══════════════════════════════════════════
@@ -1304,18 +1249,6 @@ function resetHasilForm() {
   });
   document.getElementById('h-league').value = 'EPL';
   document.getElementById('h-custom-wrap').style.display = 'none';
-  ['h-home-preview','h-away-preview'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) { el.style.display = 'none'; el.src = ''; }
-  });
-  ['h-home-name','h-away-name'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.textContent = '';
-  });
-  ['h-home-file','h-away-file'].forEach(id => {
-    const el = document.getElementById(id);
-    if (el) el.value = '';
-  });
 }
 
 // ═══════════════════════════════════════════
