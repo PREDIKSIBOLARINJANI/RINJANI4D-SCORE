@@ -443,6 +443,7 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+
 // ═══════════════════════════════════════════════════════
 // STATE
 // ═══════════════════════════════════════════════════════
@@ -460,25 +461,30 @@ burger.addEventListener('click', e => {
     dropdownCard.classList.toggle('active');
     e.stopPropagation();
 });
-document.addEventListener('click', () => dropdownCard.classList.remove('active'));
+document.addEventListener('click', () => dropdownCard.classList.remove('remove'));
 
 // ═══════════════════════════════════════════════════════
 // LOAD MARQUEE (Running Text)
 // ═══════════════════════════════════════════════════════
 async function loadMarquee() {
     try {
-        const { data } = await db
+        const { data, error } = await db
             .from('marquee')
             .select('text')
             .eq('is_active', true)
             .order('created_at', { ascending: false });
 
+        if (error) throw error;
+
         if (data && data.length > 0) {
             const texts = data.map(r => r.text).join('   ●   ');
             document.getElementById('marqueeText').textContent = texts;
+        } else {
+            document.getElementById('marqueeText').textContent = "📢 RINJANI4D: Prediksi Terakurat & Terpercaya Hari Ini!";
         }
     } catch (e) {
         console.warn('Marquee load error:', e.message);
+        document.getElementById('marqueeText').textContent = "📢 RINJANI4D: Selamat Datang di Pusat Analisa & Prediksi Bola Terakurat!";
     }
 }
 
@@ -487,23 +493,28 @@ async function loadMarquee() {
 // ═══════════════════════════════════════════════════════
 async function loadBanner() {
     try {
-        const { data } = await db
+        const { data, error } = await db
             .from('banner')
             .select('*')
             .eq('is_active', true)
             .order('sort_order', { ascending: true });
 
-        if (!data || data.length === 0) return;
+        if (error) throw error;
 
         const sliderWrapper  = document.getElementById('slider');
         const dotsContainer  = document.getElementById('dotsContainer');
+
+        if (!data || data.length === 0) {
+            // Fallback Banner Default jika database kosong
+            sliderWrapper.innerHTML = '<div class="slide"><img src="https://i.imgur.com/VDY1cAE.png" alt="Banner Default"></div>';
+            return;
+        }
 
         sliderWrapper.innerHTML = '';
         dotsContainer.innerHTML = '';
         sliderSlides = data;
 
         data.forEach((banner, i) => {
-            // Slide
             const slide = document.createElement('div');
             slide.className = 'slide';
             const img = document.createElement('img');
@@ -512,7 +523,6 @@ async function loadBanner() {
             slide.appendChild(img);
             sliderWrapper.appendChild(slide);
 
-            // Dot
             const dot = document.createElement('div');
             dot.className = 'dot' + (i === 0 ? ' active' : '');
             dot.addEventListener('click', () => moveSlider(i));
@@ -522,6 +532,8 @@ async function loadBanner() {
         sliderIdx = 0;
     } catch (e) {
         console.warn('Banner load error:', e.message);
+        // Tetap tampilkan banner default jika database gagal diakses
+        document.getElementById('slider').innerHTML = '<div class="slide"><img src="https://i.imgur.com/VDY1cAE.png" alt="Banner Default"></div>';
     }
 }
 
@@ -535,20 +547,23 @@ function moveSlider(n) {
 }
 
 function initSliderControls() {
-    document.getElementById('nextBtn').onclick = () =>
-        moveSlider((sliderIdx + 1) % (sliderSlides.length || 1));
-    document.getElementById('prevBtn').onclick = () =>
-        moveSlider((sliderIdx - 1 + (sliderSlides.length || 1)) % (sliderSlides.length || 1));
+    const nextBtn = document.getElementById('nextBtn');
+    const prevBtn = document.getElementById('prevBtn');
+    
+    if(nextBtn && prevBtn) {
+        nextBtn.onclick = () => moveSlider((sliderIdx + 1) % (sliderSlides.length || 1));
+        prevBtn.onclick = () => moveSlider((sliderIdx - 1 + (sliderSlides.length || 1)) % (sliderSlides.length || 1));
+    }
     setInterval(() => moveSlider((sliderIdx + 1) % (sliderSlides.length || 1)), 3500);
 }
 
 // ═══════════════════════════════════════════════════════
-// LOAD JADWAL (Schedule Table) - DISINKRONKAN KE TABEL MATCHES
+// LOAD JADWAL (Schedule Table)
 // ═══════════════════════════════════════════════════════
 async function loadJadwal() {
     try {
         const { data, error } = await db
-            .from('matches') // Menggunakan nama tabel kamu
+            .from('matches') 
             .select('*')
             .order('match_time', { ascending: true });
 
@@ -558,9 +573,10 @@ async function loadJadwal() {
         buildLeagueTabs();
         renderTable(allSchedules);
     } catch (e) {
+        console.error("Gagal memuat jadwal:", e.message);
         document.getElementById('scheduleBody').innerHTML =
             `<tr><td colspan="4" style="text-align:center;color:#fc8181;padding:20px;">
-                Gagal memuat jadwal: ${e.message}
+                ⚠️ Gagal terhubung ke server data. Silakan refresh halaman atau periksa koneksi internet Anda.
             </td></tr>`;
     }
 }
@@ -568,6 +584,8 @@ async function loadJadwal() {
 function buildLeagueTabs() {
     const leagues = ['ALL', ...new Set(allSchedules.map(s => s.league).filter(Boolean))];
     const tabFilter = document.getElementById('tabFilter');
+    if (!tabFilter) return;
+    
     tabFilter.innerHTML = leagues.map(l =>
         `<button class="tab-btn${l === 'ALL' ? ' active' : ''}" onclick="filterLeague('${l}')">
             ${l === 'ALL' ? 'SEMUA' : l}
@@ -590,15 +608,14 @@ function filterLeague(league) {
 
 function renderTable(data) {
     const body = document.getElementById('scheduleBody');
+    if (!body) return;
+    
     if (!data.length) {
-        body.innerHTML = `<tr><td colspan="4">
-            <div class="state-msg">Tidak ada jadwal tersedia</div>
-        </td></tr>`;
+        body.innerHTML = `<tr><td colspan="4"><div class="state-msg">Belum ada jadwal analisa tersedia saat ini.</div></td></tr>`;
         return;
     }
 
     body.innerHTML = data.map(s => {
-        // Format jam dari kolom match_time
         let waktuDisplay = '—';
         if (s.match_time) {
             const dateObj = new Date(s.match_time);
@@ -624,43 +641,47 @@ function renderTable(data) {
 }
 
 // ═══════════════════════════════════════════════════════
-// LOAD HASIL (Match Result Cards) - DISINKRONKAN KE TABEL MATCHES
+// LOAD HASIL (Match Result Cards)
 // ═══════════════════════════════════════════════════════
 async function loadHasil() {
     try {
         const { data, error } = await db
-            .from('matches') // Menggunakan nama tabel kamu
+            .from('matches') 
             .select('*')
             .order('match_time', { ascending: true });
 
         if (error) throw error;
         renderCards(data || []);
     } catch (e) {
+        console.error("Gagal memuat hasil kartu:", e.message);
         document.getElementById('matches').innerHTML =
             `<div style="grid-column:1/-1;text-align:center;color:#fc8181;padding:30px;">
-                Gagal memuat hasil: ${e.message}
+                ⚠️ Gagal memuat data kartu analisa.
             </div>`;
     }
 }
 
 function renderCards(data) {
     const container = document.getElementById('matches');
+    if (!container) return;
+    
     if (!data.length) {
-        container.innerHTML = `<div style="grid-column:1/-1;">
-            <div class="state-msg">Belum ada hasil pertandingan</div>
-        </div>`;
+        container.innerHTML = `<div style="grid-column:1/-1;"><div class="state-msg">Belum ada kartu prediksi tersedia.</div></div>`;
         return;
     }
 
     container.innerHTML = data.map(m => {
         const homeLogo = m.logo1_url
-            ? `<img src="${m.logo1_url}" onerror="this.replaceWith(createPlaceholder())">`
+            ? `<img src="${m.logo1_url}" onerror="this.src='https://i.imgur.com/placeholder.png'">`
             : `<div class="team-logo-placeholder">⚽</div>`;
         const awayLogo = m.logo2_url
-            ? `<img src="${m.logo2_url}" onerror="this.replaceWith(createPlaceholder())">`
+            ? `<img src="${m.logo2_url}" onerror="this.src='https://i.imgur.com/placeholder.png'">`
             : `<div class="team-logo-placeholder">⚽</div>`;
 
-        const predText = `Prediksi ${m.team1} vs ${m.team2}: Skor ${m.prediction || '—'} — Analisa by RINJANI4D`;
+        const cleanTeam1 = (m.team1 || '—').replace(/'/g, "\\'");
+        const cleanTeam2 = (m.team2 || '—').replace(/'/g, "\\'");
+        const cleanPred  = (m.prediction || '—').replace(/'/g, "\\'");
+        const predText = `Prediksi ${cleanTeam1} vs ${cleanTeam2}: Skor ${cleanPred} — Analisa by RINJANI4D`;
 
         return `<div class="card">
             <div class="teams">
@@ -669,13 +690,14 @@ function renderCards(data) {
                 <div class="team">${awayLogo}<p>${m.team2 || '—'}</p></div>
             </div>
             <div class="score" style="font-size: 20px; font-weight: normal; margin: 15px 0;">${m.prediction || '—'}</div>
-            <button class="copy-btn" onclick="copyMatch('${predText.replace(/'/g,"\\'")}')">
+            <button class="copy-btn" onclick="copyMatch('${predText}')">
                 📋 Salin Prediksi
             </button>
             <a href="https://rinjaniman.com" class="card-btn">PASANG SEKARANG</a>
         </div>`;
     }).join('');
 }
+
 // ═══════════════════════════════════════════════════════
 // COPY PREDIKSI
 // ═══════════════════════════════════════════════════════
@@ -683,7 +705,6 @@ function copyMatch(text) {
     navigator.clipboard.writeText(text).then(() => {
         alert('✅ Prediksi berhasil disalin!');
     }).catch(() => {
-        // Fallback untuk browser lama
         const el = document.createElement('textarea');
         el.value = text;
         document.body.appendChild(el);
@@ -695,15 +716,14 @@ function copyMatch(text) {
 }
 
 // ═══════════════════════════════════════════════════════
-// INIT
+// INIT AMAN (Jalur Mandiri - Tidak Saling Menggagalkan)
 // ═══════════════════════════════════════════════════════
 async function init() {
-    await Promise.all([
-        loadMarquee(),
-        loadBanner(),
-        loadJadwal(),
-        loadHasil()
-    ]);
+    // Dipisah satu per satu agar jika salah satu tabel error, yang lain tetap lancar jaya!
+    await loadMarquee();
+    await loadBanner();
+    await loadJadwal();
+    await loadHasil();
     initSliderControls();
 }
 
