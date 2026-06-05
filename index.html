@@ -48,35 +48,49 @@
         }
 
         /* 3. HEADER & MENU NAVIGATION */
-       header { 
-    display: flex; 
-    justify-content: flex-start; 
-    align-items: center; 
-    padding: 10px 20px; 
-    background: rgba(0, 0, 0, 0.9); 
-    border-bottom: 2px solid #ffd700; 
-    position: sticky;
-    top: 0;
-    z-index: 1000;
-    gap: 30px;
-}
-.logo img { height: 45px; width: auto; object-fit: contain; }
+        header { 
+            display: flex; 
+            justify-content: space-between; 
+            align-items: center; 
+            padding: 10px 20px; 
+            background: rgba(0, 0, 0, 0.9); 
+            border-bottom: 2px solid #ffd700; 
+            position: sticky;
+            top: 0;
+            z-index: 1000;
+        }
+        .logo img { height: 45px; width: auto; object-fit: contain; }
 
-/* Menu Navigasi Samping Logo */
-.nav-menu {
-    display: flex;
-    flex-direction: row;
-    gap: 20px;
-}
-.nav-menu a {
-    color: white; 
-    text-decoration: none; 
-    font-size: 15px; 
-    font-weight: 600;
-    transition: color 0.3s ease;
-}
-.nav-menu a:hover { color: #ffd700; }
-       
+        /* BURGER ICON */
+        .menu-container { position: relative; }
+        .burger { cursor: pointer; padding: 5px; }
+        .burger span {
+            display: block; width: 25px; height: 3px; margin: 5px 0;
+            background: #ffd700; border-radius: 2px;
+        }
+
+        /* DROPDOWN MENU */
+        .dropdown-card {
+            display: none; 
+            position: absolute; 
+            top: 50px; 
+            right: 0;
+            background: rgba(17, 17, 17, 0.95); 
+            border: 1px solid #ffd700;
+            border-radius: 8px; 
+            width: 160px; 
+            flex-direction: column; 
+            backdrop-filter: blur(10px);
+        }
+        .dropdown-card.active { display: flex; }
+        .dropdown-card a {
+            color: white; 
+            text-decoration: none; 
+            padding: 12px 15px;
+            font-size: 14px; 
+            border-bottom: 1px solid rgba(255,255,255,0.1);
+        }
+        .dropdown-card a:hover { background: #ffd700; color: #000; }
 
         /* 4. RUNNING TEXT (MARQUEE) */
         .marquee-container { 
@@ -286,14 +300,18 @@
 
 <header>
     <div class="logo">
-        <img src="https://i.imgur.com/3V3aniY.png" alt="Logo RINJANI4D">
+        <img src="https://i.imgur.com/DuwlIfJ.png" alt="Logo RINJANI4D">
     </div>
-    <!-- Menu navigasi langsung berjejer ke samping -->
-    <nav class="nav-menu">
-        <a href="https://rinjaniman.com">Login</a>
-        <a href="https://rinjaniman.com/register">Daftar</a>
-        <a href="https://rinjani-game-world--colombogelap.replit.app">Profil</a>
-    </nav>
+    <div class="menu-container">
+        <div class="burger" id="burger">
+            <span></span><span></span><span></span>
+        </div>
+        <div class="dropdown-card" id="dropdownCard">
+            <a href="https://rinjaniman.com">Login</a>
+            <a href="https://rinjaniman.com/register">Daftar</a>
+            <a href="https://rinjani-game-world--colombogelap.replit.app">Profil</a>
+        </div>
+    </div>
 </header>
 
 <div class="marquee-container">
