@@ -1,0 +1,412 @@
+/* ============================================================
+   css/admin.css — RINJANI4D Admin Dashboard
+   ============================================================ */
+
+@import url('https://fonts.googleapis.com/css2?family=Cinzel:wght@400;600;700&family=Rajdhani:wght@400;500;600;700&display=swap');
+
+:root {
+  --gold       : #ffd700;
+  --gold-light : #ffe566;
+  --gold-dark  : #b8960c;
+  --bg-dark    : #080808;
+  --bg-panel   : #111111;
+  --bg-input   : #161616;
+  --bg-card    : #131313;
+  --border     : #252525;
+  --border-gold: rgba(255,215,0,0.18);
+  --text       : #e0e0e0;
+  --text-dim   : #888;
+  --text-muted : #444;
+  --green      : #2dc653;
+  --red        : #e63946;
+  --radius     : 10px;
+}
+
+*, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+body {
+  background : var(--bg-dark);
+  color      : var(--text);
+  font-family: 'Rajdhani', sans-serif;
+  font-size  : 15px;
+  min-height : 100vh;
+}
+
+/* ── Header ── */
+.admin-header {
+  background      : var(--bg-panel);
+  border-bottom   : 1px solid var(--border-gold);
+  padding         : 0 24px;
+  height          : 60px;
+  display         : flex;
+  align-items     : center;
+  justify-content : space-between;
+  position        : sticky;
+  top             : 0;
+  z-index         : 100;
+}
+
+.admin-brand {
+  display    : flex;
+  align-items: center;
+  gap        : 10px;
+}
+.admin-brand .brand-icon {
+  width        : 34px; height: 34px;
+  background   : linear-gradient(135deg, var(--gold), var(--gold-dark));
+  border-radius: 7px;
+  display      : grid;
+  place-items  : center;
+  font-size    : 16px;
+}
+.admin-brand .brand-name {
+  font-family             : 'Cinzel', serif;
+  font-size               : 1rem;
+  font-weight             : 700;
+  background              : linear-gradient(135deg, var(--gold), #fff8cc);
+  -webkit-background-clip : text;
+  -webkit-text-fill-color : transparent;
+  background-clip         : text;
+}
+.admin-badge {
+  padding       : 3px 10px;
+  background    : rgba(255,215,0,0.08);
+  border        : 1px solid var(--border-gold);
+  border-radius : 20px;
+  font-size     : 0.7rem;
+  color         : var(--gold-dark);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+}
+.header-link {
+  font-size  : 0.82rem;
+  color      : var(--text-dim);
+  display    : flex;
+  align-items: center;
+  gap        : 6px;
+  transition : color 0.2s;
+  text-decoration: none;
+}
+.header-link:hover { color: var(--gold); }
+
+/* ── Main Layout ── */
+.admin-main {
+  max-width: 960px;
+  margin   : 0 auto;
+  padding  : 28px 20px 60px;
+  display  : grid;
+  gap      : 24px;
+}
+
+/* ── Section Title ── */
+.section-title {
+  display       : flex;
+  align-items   : center;
+  gap           : 10px;
+  font-family   : 'Cinzel', serif;
+  font-size     : 0.92rem;
+  font-weight   : 700;
+  color         : var(--gold);
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  margin-bottom : 20px;
+  padding-bottom: 12px;
+  border-bottom : 1px solid var(--border-gold);
+}
+
+/* ── Form Panel ── */
+.form-panel {
+  background   : var(--bg-panel);
+  border       : 1px solid var(--border);
+  border-radius: 14px;
+  padding      : 24px;
+  position     : relative;
+  overflow     : hidden;
+}
+.form-panel::before {
+  content   : '';
+  position  : absolute;
+  top: 0; left: 0; right: 0;
+  height    : 2px;
+  background: linear-gradient(90deg, transparent, var(--gold-dark), transparent);
+}
+
+/* ── Form Grid ── */
+.form-grid {
+  display              : grid;
+  grid-template-columns: 1fr 1fr;
+  gap                  : 16px;
+}
+.form-grid .full { grid-column: 1 / -1; }
+
+/* ── Form Group ── */
+.form-group { display: flex; flex-direction: column; gap: 6px; }
+
+.form-label {
+  font-size     : 0.76rem;
+  font-weight   : 700;
+  letter-spacing: 0.08em;
+  text-transform: uppercase;
+  color         : var(--text-dim);
+}
+.form-label .required { color: var(--gold); margin-left: 2px; }
+
+.form-input,
+.form-select {
+  background  : var(--bg-input);
+  border      : 1px solid var(--border);
+  border-radius: 8px;
+  padding     : 10px 14px;
+  color       : var(--text);
+  font-family : 'Rajdhani', sans-serif;
+  font-size   : 0.95rem;
+  transition  : border-color 0.2s, box-shadow 0.2s;
+  width       : 100%;
+}
+.form-input:focus,
+.form-select:focus {
+  outline   : none;
+  border-color: var(--gold-dark);
+  box-shadow: 0 0 0 3px rgba(255,215,0,0.05);
+}
+.form-select {
+  -webkit-appearance: none;
+  appearance        : none;
+  background-image  : url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='12' height='12' viewBox='0 0 12 12'%3E%3Cpath fill='%23888' d='M6 8L1 3h10z'/%3E%3C/svg%3E");
+  background-repeat : no-repeat;
+  background-position: right 14px center;
+  padding-right     : 36px;
+  cursor            : pointer;
+}
+.form-select option { background: #1a1a1a; color: var(--text); }
+
+/* ── Logo Upload ── */
+.logo-upload-group {
+  display              : grid;
+  grid-template-columns: 1fr 1fr;
+  gap                  : 16px;
+}
+
+.logo-upload-box {
+  background   : var(--bg-input);
+  border       : 1px dashed var(--border);
+  border-radius: 10px;
+  padding      : 16px;
+  display      : flex;
+  flex-direction: column;
+  align-items  : center;
+  gap          : 10px;
+  transition   : border-color 0.2s;
+  position     : relative;
+  cursor       : pointer;
+}
+.logo-upload-box:hover { border-color: var(--gold-dark); }
+.logo-upload-box input[type="file"] {
+  position: absolute;
+  inset   : 0;
+  opacity : 0;
+  cursor  : pointer;
+}
+
+.logo-preview-circle {
+  width        : 64px; height: 64px;
+  border-radius: 50%;
+  background   : var(--bg-card);
+  border       : 2px solid var(--border);
+  object-fit   : contain;
+  padding      : 4px;
+  display      : none;
+}
+
+.logo-placeholder-icon {
+  width        : 64px; height: 64px;
+  border-radius: 50%;
+  background   : linear-gradient(135deg, #1a1500, #222);
+  border       : 2px dashed var(--border);
+  display      : grid;
+  place-items  : center;
+  font-size    : 1.5rem;
+  color        : var(--text-muted);
+  pointer-events: none;
+}
+
+.logo-upload-label {
+  font-size     : 0.78rem;
+  color         : var(--text-dim);
+  text-align    : center;
+  pointer-events: none;
+}
+.logo-upload-sublabel {
+  font-size     : 0.7rem;
+  color         : var(--text-muted);
+  text-align    : center;
+  pointer-events: none;
+}
+
+/* ── Publish Button ── */
+#publish-btn {
+  width          : 100%;
+  padding        : 14px;
+  background     : linear-gradient(135deg, var(--gold), var(--gold-dark));
+  border-radius  : 9px;
+  color          : #000;
+  font-family    : 'Rajdhani', sans-serif;
+  font-size      : 1rem;
+  font-weight    : 700;
+  letter-spacing : 0.08em;
+  text-transform : uppercase;
+  display        : flex;
+  align-items    : center;
+  justify-content: center;
+  gap            : 10px;
+  transition     : transform 0.2s, box-shadow 0.2s, opacity 0.2s;
+  margin-top     : 8px;
+  cursor         : pointer;
+  border         : none;
+}
+#publish-btn:hover    { transform: translateY(-2px); box-shadow: 0 8px 24px rgba(255,215,0,0.22); }
+#publish-btn:disabled { opacity: 0.5; cursor: not-allowed; transform: none; box-shadow: none; }
+
+.spinner {
+  width        : 16px; height: 16px;
+  border       : 2px solid rgba(0,0,0,0.25);
+  border-top-color: #000;
+  border-radius: 50%;
+  animation    : spin 0.6s linear infinite;
+  display      : inline-block;
+}
+@keyframes spin { to { transform: rotate(360deg); } }
+
+/* ── Recent Panel ── */
+.recent-panel {
+  background   : var(--bg-panel);
+  border       : 1px solid var(--border);
+  border-radius: 14px;
+  padding      : 24px;
+}
+
+.loading-text {
+  display    : flex;
+  align-items: center;
+  gap        : 10px;
+  color      : var(--text-dim);
+  font-size  : 0.85rem;
+  padding    : 20px 0;
+}
+.empty-msg { color: var(--text-muted); font-size: 0.85rem; padding: 20px 0; }
+.error-msg { color: var(--red);        font-size: 0.85rem; padding: 20px 0; }
+
+/* ── Admin Match Row ── */
+.admin-match-row {
+  display      : flex;
+  align-items  : center;
+  gap          : 14px;
+  padding      : 12px 0;
+  border-bottom: 1px solid var(--border);
+}
+.admin-match-row:last-child { border-bottom: none; }
+
+.amr-logos {
+  display    : flex;
+  align-items: center;
+  gap        : 6px;
+  flex-shrink: 0;
+}
+.amr-logo {
+  width        : 36px; height: 36px;
+  border-radius: 50%;
+  object-fit   : contain;
+  background   : #1e1e1e;
+  padding      : 3px;
+  border       : 1px solid var(--border);
+}
+.amr-logo-ph {
+  width        : 36px; height: 36px;
+  border-radius: 50%;
+  background   : linear-gradient(135deg, var(--gold-dark), #3a2800);
+  display      : grid;
+  place-items  : center;
+  font-weight  : 700;
+  font-size    : 0.8rem;
+  color        : var(--gold-light);
+}
+.amr-vs { font-size: 0.65rem; color: var(--text-muted); font-weight: 700; }
+
+.amr-info { flex: 1; min-width: 0; }
+.amr-teams {
+  font-size    : 0.88rem;
+  font-weight  : 600;
+  margin-bottom: 3px;
+  white-space  : nowrap;
+  overflow     : hidden;
+  text-overflow: ellipsis;
+}
+.amr-meta  { font-size: 0.75rem; color: var(--text-dim); }
+.amr-league {
+  display       : inline-block;
+  padding       : 1px 6px;
+  background    : rgba(255,215,0,0.07);
+  border        : 1px solid var(--border-gold);
+  border-radius : 3px;
+  font-size     : 0.68rem;
+  color         : var(--gold-dark);
+  font-weight   : 700;
+  text-transform: uppercase;
+  letter-spacing: 0.05em;
+}
+.amr-pred         { font-size: 0.75rem; color: var(--text-dim); margin-top: 2px; }
+.amr-pred strong  { color: var(--gold); }
+
+.delete-btn {
+  flex-shrink  : 0;
+  width        : 32px; height: 32px;
+  border-radius: 7px;
+  background   : rgba(230,57,70,0.08);
+  border       : 1px solid rgba(230,57,70,0.18);
+  color        : var(--red);
+  display      : grid;
+  place-items  : center;
+  font-size    : 0.8rem;
+  transition   : background 0.2s;
+  cursor       : pointer;
+}
+.delete-btn:hover { background: rgba(230,57,70,0.18); }
+
+/* ── Toast ── */
+#toast-container {
+  position      : fixed;
+  bottom        : 24px;
+  right         : 20px;
+  display       : flex;
+  flex-direction: column;
+  gap           : 8px;
+  z-index       : 9999;
+}
+.toast {
+  min-width : 240px;
+  max-width : 360px;
+  padding   : 12px 18px;
+  border-radius: 9px;
+  font-size : 0.875rem;
+  font-weight: 600;
+  background: var(--bg-panel);
+  border    : 1px solid var(--border);
+  color     : var(--text);
+  box-shadow: 0 4px 20px rgba(0,0,0,0.5);
+  opacity   : 0;
+  transform : translateY(16px);
+  transition: all 0.3s;
+}
+.toast.show       { opacity: 1; transform: translateY(0); }
+.toast-success    { border-color: rgba(45,198,83,0.4);  background: rgba(45,198,83,0.07); }
+.toast-error      { border-color: rgba(230,57,70,0.4);  background: rgba(230,57,70,0.07); }
+.toast-info       { border-color: rgba(255,215,0,0.28); background: rgba(255,215,0,0.05); }
+
+/* ── Responsive ── */
+@media (max-width: 640px) {
+  .admin-main        { padding: 16px 14px 40px; }
+  .form-grid         { grid-template-columns: 1fr; }
+  .logo-upload-group { grid-template-columns: 1fr 1fr; }
+  .form-panel,
+  .recent-panel      { padding: 16px; }
+}
