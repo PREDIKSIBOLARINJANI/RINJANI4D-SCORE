@@ -1,0 +1,219 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>RINJANI4D — Admin Dashboard</title>
+
+  <!-- Styles -->
+  <link rel="stylesheet" href="css/admin.css" />
+
+  <!-- Font Awesome -->
+  <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.5.0/css/all.min.css" />
+
+  <!-- Supabase CDN -->
+  <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+</head>
+<body>
+
+  <!-- ══════════════════════════════════════════════════════════
+       ADMIN HEADER
+  ══════════════════════════════════════════════════════════ -->
+  <header class="admin-header">
+    <div class="admin-brand">
+      <div class="brand-icon">⚽</div>
+      <span class="brand-name">RINJANI4D</span>
+      <span class="admin-badge"><i class="fas fa-shield-alt"></i> Admin</span>
+    </div>
+    <a href="index.html" class="header-link">
+      <i class="fas fa-arrow-left"></i> Kembali ke Situs
+    </a>
+  </header>
+
+  <!-- ══════════════════════════════════════════════════════════
+       MAIN CONTENT
+  ══════════════════════════════════════════════════════════ -->
+  <main class="admin-main">
+
+    <!-- ─── FORM INPUT JADWAL ─── -->
+    <div class="form-panel">
+      <h2 class="section-title">
+        <i class="fas fa-plus-circle"></i>
+        Input Jadwal & Prediksi Baru
+      </h2>
+
+      <div class="form-grid">
+
+        <!-- Liga -->
+        <div class="form-group">
+          <label class="form-label" for="league">
+            Liga <span class="required">*</span>
+          </label>
+          <select id="league" class="form-select">
+            <option value="">— Pilih Liga —</option>
+            <option value="PREMIER LEAGUE">🏴󠁧󠁢󠁥󠁮󠁧󠁿 Premier League</option>
+            <option value="LA LIGA">🇪🇸 La Liga</option>
+            <option value="SERIE A">🇮🇹 Serie A</option>
+            <option value="BUNDESLIGA">🇩🇪 Bundesliga</option>
+            <option value="LIGUE 1">🇫🇷 Ligue 1</option>
+            <option value="UCL">⭐ UEFA Champions League</option>
+            <option value="LIGA INDONESIA">🇮🇩 Liga Indonesia</option>
+            <option value="PIALA DUNIA">🌍 Piala Dunia</option>
+            <option value="LAINNYA">⚽ Lainnya</option>
+          </select>
+        </div>
+
+        <!-- Jam Tanding -->
+        <div class="form-group">
+          <label class="form-label" for="match_time">
+            Jam & Tanggal Tanding <span class="required">*</span>
+          </label>
+          <input
+            type="datetime-local"
+            id="match_time"
+            class="form-input"
+            aria-label="Jam dan tanggal pertandingan"
+          />
+        </div>
+
+        <!-- Tim 1 -->
+        <div class="form-group">
+          <label class="form-label" for="team1">
+            Nama Tim 1 (Home) <span class="required">*</span>
+          </label>
+          <input
+            type="text"
+            id="team1"
+            class="form-input"
+            placeholder="cth: Manchester City"
+            autocomplete="off"
+          />
+        </div>
+
+        <!-- Tim 2 -->
+        <div class="form-group">
+          <label class="form-label" for="team2">
+            Nama Tim 2 (Away) <span class="required">*</span>
+          </label>
+          <input
+            type="text"
+            id="team2"
+            class="form-input"
+            placeholder="cth: Real Madrid"
+            autocomplete="off"
+          />
+        </div>
+
+        <!-- Prediksi Skor -->
+        <div class="form-group full">
+          <label class="form-label" for="prediction">
+            Prediksi Skor / Parlay
+            <span style="color:var(--text-muted); font-weight:400;">(Opsional)</span>
+          </label>
+          <input
+            type="text"
+            id="prediction"
+            class="form-input"
+            placeholder="cth: 2-1 / Over 2.5 / Kedua tim cetak gol"
+            autocomplete="off"
+          />
+        </div>
+
+        <!-- Upload Logo -->
+        <div class="form-group full">
+          <p class="form-label">Upload Logo Klub <span style="color:var(--text-muted); font-weight:400;">(Opsional, maks 2MB)</span></p>
+          <div class="logo-upload-group">
+
+            <!-- Logo Tim 1 -->
+            <div class="logo-upload-box" title="Klik untuk upload logo Tim 1">
+              <input type="file" id="logo1_file" accept="image/*" aria-label="Upload logo tim 1" />
+              <img
+                id="logo1_preview"
+                class="logo-preview-circle"
+                src=""
+                alt="Preview Logo Tim 1"
+                onerror="this.style.display='none'; document.getElementById('ph1').style.display='grid';"
+                style="display:none;"
+              />
+              <div id="ph1" class="logo-placeholder-icon"><i class="fas fa-shield-alt"></i></div>
+              <span class="logo-upload-label"><i class="fas fa-upload"></i> Logo Tim 1</span>
+              <span class="logo-upload-sublabel">JPG / PNG / WEBP</span>
+            </div>
+
+            <!-- Logo Tim 2 -->
+            <div class="logo-upload-box" title="Klik untuk upload logo Tim 2">
+              <input type="file" id="logo2_file" accept="image/*" aria-label="Upload logo tim 2" />
+              <img
+                id="logo2_preview"
+                class="logo-preview-circle"
+                src=""
+                alt="Preview Logo Tim 2"
+                onerror="this.style.display='none'; document.getElementById('ph2').style.display='grid';"
+                style="display:none;"
+              />
+              <div id="ph2" class="logo-placeholder-icon"><i class="fas fa-shield-alt"></i></div>
+              <span class="logo-upload-label"><i class="fas fa-upload"></i> Logo Tim 2</span>
+              <span class="logo-upload-sublabel">JPG / PNG / WEBP</span>
+            </div>
+
+          </div>
+        </div><!-- /logo group -->
+
+        <!-- Tombol Publish -->
+        <div class="form-group full">
+          <button id="publish-btn" type="button">
+            <i class="fas fa-paper-plane"></i> Publish Jadwal
+          </button>
+        </div>
+
+      </div><!-- /form-grid -->
+    </div><!-- /form-panel -->
+
+    <!-- ─── DAFTAR JADWAL TERAKHIR ─── -->
+    <div class="recent-panel">
+      <h2 class="section-title">
+        <i class="fas fa-list-ul"></i>
+        Jadwal Terakhir Diinput
+      </h2>
+      <div id="recent-matches">
+        <div class="loading-text"><span class="spinner"></span> Memuat data...</div>
+      </div>
+    </div>
+
+  </main><!-- /admin-main -->
+
+  <!-- Toast container -->
+  <div id="toast-container" aria-live="polite"></div>
+
+  <!-- ══════════════════════════════════════════════════════════
+       SCRIPTS — config.js WAJIB pertama
+  ══════════════════════════════════════════════════════════ -->
+  <script src="js/config.js"></script>
+  <script src="js/admin.js"></script>
+
+  <!-- Override preview logic to show/hide img vs placeholder -->
+  <script>
+    // Show image preview properly
+    ['logo1_file', 'logo2_file'].forEach((id, idx) => {
+      const suffix = idx + 1;
+      const input = document.getElementById(id);
+      const preview = document.getElementById(`logo${suffix}_preview`);
+      const ph = document.getElementById(`ph${suffix}`);
+      if (!input || !preview || !ph) return;
+
+      input.addEventListener('change', function() {
+        const file = this.files[0];
+        if (!file) return;
+        const reader = new FileReader();
+        reader.onload = ev => {
+          preview.src = ev.target.result;
+          preview.style.display = 'block';
+          ph.style.display = 'none';
+        };
+        reader.readAsDataURL(file);
+      });
+    });
+  </script>
+
+</body>
+</html>
