@@ -986,11 +986,14 @@ async function initApp() {
 async function checkDb() {
   const el = document.getElementById('db-status');
   try {
-    const { error } = await db.from('jadwal').select('id').limit(1);
+    // Memeriksa kesiapan tabel 'jadwal'
+    const { error } = await db.from('jadwal').select('time').limit(1);
     if (error && error.code !== 'PGRST116') throw error;
+    
     el.textContent = '✅ Terhubung';
     el.style.color = '#68d391';
-  } catch {
+  } catch (err) {
+    console.warn("Database Connection Status Detail:", err.message);
     el.textContent = '❌ Gagal';
     el.style.color = 'var(--danger)';
   }
