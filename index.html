@@ -543,14 +543,14 @@ function initSliderControls() {
 }
 
 // ═══════════════════════════════════════════════════════
-// LOAD JADWAL (Schedule Table)
+// LOAD JADWAL (Schedule Table) - DISINKRONKAN KE TABEL MATCHES
 // ═══════════════════════════════════════════════════════
 async function loadJadwal() {
     try {
         const { data, error } = await db
-            .from('jadwal')
+            .from('matches') // Menggunakan nama tabel kamu
             .select('*')
-            .order('created_at', { ascending: false });
+            .order('match_time', { ascending: true });
 
         if (error) throw error;
 
@@ -598,40 +598,40 @@ function renderTable(data) {
     }
 
     body.innerHTML = data.map(s => {
-        // Pisahkan match_name jadi home & away untuk tampilan logo
-        const parts = (s.match_name || '').split(' vs ');
-        const home  = parts[0]?.trim() || s.match_name;
-        const away  = parts[1]?.trim() || '';
+        // Format jam dari kolom match_time
+        let waktuDisplay = '—';
+        if (s.match_time) {
+            const dateObj = new Date(s.match_time);
+            waktuDisplay = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
+        }
 
-        const homeLogo = s.home_logo
-            ? `<img src="${s.home_logo}" style="width:22px;height:22px;object-fit:contain;border-radius:50%;vertical-align:middle;margin-right:4px;background:rgba(255,255,255,0.1);" onerror="this.style.display='none'">`
+        const homeLogo = s.logo1_url
+            ? `<img src="${s.logo1_url}" style="width:22px;height:22px;object-fit:contain;border-radius:50%;vertical-align:middle;margin-right:4px;background:rgba(255,255,255,0.1);" onerror="this.style.display='none'">`
             : '';
-        const awayLogo = s.away_logo
-            ? `<img src="${s.away_logo}" style="width:22px;height:22px;object-fit:contain;border-radius:50%;vertical-align:middle;margin-left:4px;background:rgba(255,255,255,0.1);" onerror="this.style.display='none'">`
+        const awayLogo = s.logo2_url
+            ? `<img src="${s.logo2_url}" style="width:22px;height:22px;object-fit:contain;border-radius:50%;vertical-align:middle;margin-left:4px;background:rgba(255,255,255,0.1);" onerror="this.style.display='none'">`
             : '';
 
-        const matchDisplay = away
-            ? `${homeLogo}${home} <span style="color:#ffd700;font-weight:800;margin:0 4px;">vs</span> ${away}${awayLogo}`
-            : `${home}`;
+        const matchDisplay = `${homeLogo}${s.team1 || '—'} <span style="color:#ffd700;font-weight:800;margin:0 4px;">vs</span> ${s.team2 || '—'}${awayLogo}`;
 
         return `<tr>
-            <td style="white-space:nowrap;font-weight:700;color:#ffd700;">${s.time || '—'} WIB</td>
+            <td style="white-space:nowrap;font-weight:700;color:#ffd700;">${waktuDisplay}</td>
             <td style="color:#ffd700; font-weight:bold;">${s.league || '—'}</td>
             <td>${matchDisplay}</td>
-            <td style="font-family:'Barlow Condensed'; font-weight:800; color:#ffd700;">${s.prob || '—'}</td>
+            <td style="font-family:'Barlow Condensed'; font-weight:800; color:#ffd700;">${s.prediction || '—'}</td>
         </tr>`;
     }).join('');
 }
 
 // ═══════════════════════════════════════════════════════
-// LOAD HASIL (Match Result Cards)
+// LOAD HASIL (Match Result Cards) - DISINKRONKAN KE TABEL MATCHES
 // ═══════════════════════════════════════════════════════
 async function loadHasil() {
     try {
         const { data, error } = await db
-            .from('hasil')
+            .from('matches') // Menggunakan nama tabel kamu
             .select('*')
-            .order('created_at', { ascending: false });
+            .order('match_time', { ascending: true });
 
         if (error) throw error;
         renderCards(data || []);
@@ -653,22 +653,22 @@ function renderCards(data) {
     }
 
     container.innerHTML = data.map(m => {
-        const homeLogo = m.home_logo
-            ? `<img src="${m.home_logo}" onerror="this.replaceWith(createPlaceholder())">`
+        const homeLogo = m.logo1_url
+            ? `<img src="${m.logo1_url}" onerror="this.replaceWith(createPlaceholder())">`
             : `<div class="team-logo-placeholder">⚽</div>`;
-        const awayLogo = m.away_logo
-            ? `<img src="${m.away_logo}" onerror="this.replaceWith(createPlaceholder())">`
+        const awayLogo = m.logo2_url
+            ? `<img src="${m.logo2_url}" onerror="this.replaceWith(createPlaceholder())">`
             : `<div class="team-logo-placeholder">⚽</div>`;
 
-        const predText = `Prediksi ${m.home} vs ${m.away}: Skor ${m.score} — Analisa by RINJANI4D`;
+        const predText = `Prediksi ${m.team1} vs ${m.team2}: Skor ${m.prediction || '—'} — Analisa by RINJANI4D`;
 
         return `<div class="card">
             <div class="teams">
-                <div class="team">${homeLogo}<p>${m.home || '—'}</p></div>
+                <div class="team">${homeLogo}<p>${m.team1 || '—'}</p></div>
                 <div class="vs">VS</div>
-                <div class="team">${awayLogo}<p>${m.away || '—'}</p></div>
+                <div class="team">${awayLogo}<p>${m.team2 || '—'}</p></div>
             </div>
-            <div class="score">${m.score || '—'}</div>
+            <div class="score" style="font-size: 20px; font-weight: normal; margin: 15px 0;">${m.prediction || '—'}</div>
             <button class="copy-btn" onclick="copyMatch('${predText.replace(/'/g,"\\'")}')">
                 📋 Salin Prediksi
             </button>
@@ -676,14 +676,6 @@ function renderCards(data) {
         </div>`;
     }).join('');
 }
-
-function createPlaceholder() {
-    const d = document.createElement('div');
-    d.className = 'team-logo-placeholder';
-    d.textContent = '⚽';
-    return d;
-}
-
 // ═══════════════════════════════════════════════════════
 // COPY PREDIKSI
 // ═══════════════════════════════════════════════════════
