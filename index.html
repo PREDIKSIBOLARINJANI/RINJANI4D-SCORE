@@ -292,9 +292,6 @@
             from { transform: rotateY(0deg); }
             to { transform: rotateY(360deg); }
         }
-
-        /* Pesan loading data */
-        .loading-text { text-align: center; color: #ffd700; padding: 20px; font-weight: bold; }
     </style>
 </head>
 <body>
@@ -356,78 +353,51 @@
                     <th>Win Prob (%)</th>
                 </tr>
             </thead>
-            <tbody id="scheduleBody">
-                <tr><td colspan="4" class="loading-text">Memuat Jadwal Terkini...</td></tr>
-            </tbody>
+            <tbody id="scheduleBody"></tbody>
         </table>
     </div>
 
     <div class="page">
         <div class="scene">    
-            <div class="a3d" style="--n: 14">      
-                <img class="carousel-img" style="--i: 0"  src="https://i.imgur.com/pCUtUHZ.png" alt="Slide 1">      
+            <div class="a3d" style="--n: 12">      
+                <img class="carousel-img" style="--i: 0"  src="https://https://i.imgur.com/pCUtUHZ.png" alt="Slide 1">      
                 <img class="carousel-img" style="--i: 1"  src="https://i.imgur.com/0Z8hrM9.png" alt="Slide 2">      
-                <img class="carousel-img" style="--i: 2"  src="https://i.imgur.com/HCEh6GQ.png" alt="Slide 3">      
+                <img class="carousel-img" style="--i: 2"  src="https://i.imgur.com/R0lMeDQ.png" alt="Slide 3">      
                 <img class="carousel-img" style="--i: 3"  src="https://i.imgur.com/RAkBKqj.png" alt="Slide 4">      
                 <img class="carousel-img" style="--i: 4"  src="https://i.imgur.com/GRTGwgy.png" alt="Slide 5">      
                 <img class="carousel-img" style="--i: 5"  src="https://i.imgur.com/ZZ52hFX.png" alt="Slide 6">      
-                <img class="carousel-img" style="--i: 6"  src="https://i.imgur.com/ZZ52hFX.png" alt="Slide 7">      
+                <img class="carousel-img" style="--i: 6"  src="https://i.imgur.com/GTxYKyY.png" alt="Slide 7">      
                 <img class="carousel-img" style="--i: 7"  src="https://i.imgur.com/Q3alshL.png" alt="Slide 8">      
                 <img class="carousel-img" style="--i: 8"  src="https://i.imgur.com/jfvL5X4.png" alt="Slide 9">      
                 <img class="carousel-img" style="--i: 9"  src="https://i.imgur.com/oNwcHez.png" alt="Slide 10">      
                 <img class="carousel-img" style="--i: 10" src="https://i.imgur.com/d8dSp1P.png" alt="Slide 11">      
                 <img class="carousel-img" style="--i: 11" src="https://i.imgur.com/Mg7WTwT.png" alt="Slide 12">
-                <img class="carousel-img" style="--i: 12" src="https://i.imgur.com/yYVcOJb.png" alt="Slide 13">
-                <img class="carousel-img" style="--i: 13" src="https://i.imgur.com/DBahwmx.png" alt="Slide 14">
+               <img class="carousel-img" style="--i: 12"
+src="https://i.imgur.com/yYVcOJb.png" alt="Slide 13">
+               <img class="carousel-img" style="--i: 13"
+src="https://i.imgur.com/DBahwmx.png" alt="Slide 14">
             </div>  
         </div>
     </div>
 </section>
 
-<main id="matches" class="match-grid">
-    <div style="grid-column: 1/-1;" class="loading-text">Memuat Kartu Prediksi...</div>
-</main>
+<main id="matches" class="match-grid"></main>
 
 <a href="https://rinjaniman.com" target="_blank" class="floating">MAIN SEKARANG</a>
 
-<!-- MEMANGGIL FILE KONFIGURASI SUPABASE -->
-<script src="js/config.js"></script>
-
 <script>
-// --- VARIABEL UTAMA DATA DARI SUPABASE ---
-let schedules = [];
-let matchResults = [];
+// --- DATA JADWAL & HASIL ---
+const schedules = [
+    { time: "21:00", league: "EPL", match: "Arsenal vs Liverpool", prob: "H 45% | D 15% | A 40%" },
+    { time: "02:00", league: "UCL", match: "Man City vs Real Madrid", prob: "H 50% | D 20% | A 30%" },
+    { time: "15:30", league: "LIGA 1", match: "Persib vs Persija", prob: "H 42% | D 20% | A 38%" },
+    { time: "23:00", league: "EPL", match: "Chelsea vs Spurs", prob: "H 35% | D 25% | A 40%" }
+];
 
-// --- FUNGSI MENGAMBIL DATA DARI SUPABASE API ---
-async function fetchDataFromSupabase() {
-    try {
-        // 1. Ambil Data Jadwal
-        const resSchedule = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/schedules?select=*`, {
-            headers: {
-                "apikey": CONFIG.SUPABASE_ANON_KEY,
-                "Authorization": `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-            }
-        });
-        schedules = await resSchedule.json();
-
-        // 2. Ambil Data Prediksi Kartu
-        const resPredictions = await fetch(`${CONFIG.SUPABASE_URL}/rest/v1/predictions?select=*`, {
-            headers: {
-                "apikey": CONFIG.SUPABASE_ANON_KEY,
-                "Authorization": `Bearer ${CONFIG.SUPABASE_ANON_KEY}`
-            }
-        });
-        matchResults = await resPredictions.json();
-
-        // Jalankan render setelah data berhasil didapatkan
-        filterLeague('ALL');
-        renderCards();
-
-    } catch (error) {
-        console.error("Gagal mengambil data database Supabase:", error);
-        document.getElementById('scheduleBody').innerHTML = `<tr><td colspan="4" style="color:#b32e2e; text-align:center;">Gagal memuat data jadwal.</td></tr>`;
-    }
-}
+const matchResults = [
+    { home: "Arsenal", homeLogo: "https://i.imgur.com/e4HFaAA.png", away: "Chelsea", awayLogo: "https://i.imgur.com/rRKLxQd.png", score: "2-1" },
+    { home: "Liverpool", homeLogo: "https://i.imgur.com/kufe8Br.png", away: "Man City", awayLogo: "https://i.imgur.com/X7oPQOJ.png", score: "1-1" }
+];
 
 // --- FUNGSI BURGER MENU ---
 const burger = document.getElementById('burger');
@@ -448,22 +418,18 @@ function filterLeague(league) {
         if(btn.textContent === league || (league === 'ALL' && btn.textContent === 'SEMUA')) btn.classList.add('active');
     });
 
-    const filtered = league === 'ALL' ? schedules : schedules.filter(s => s.league.toUpperCase() === league.toUpperCase());
+    const filtered = league === 'ALL' ? schedules : schedules.filter(s => s.league === league);
     renderTable(filtered);
 }
 
 function renderTable(data) {
     const body = document.getElementById('scheduleBody');
-    if(data.length === 0) {
-        body.innerHTML = `<tr><td colspan="4" style="text-align:center; color:#aaa;">Tidak ada jadwal tersedia.</td></tr>`;
-        return;
-    }
     body.innerHTML = data.map(s => `
         <tr>
             <td>${s.time} WIB</td>
             <td style="color:#ffd700; font-weight:bold;">${s.league}</td>
             <td>${s.match}</td>
-            <td style="font-family:'Barlow Condensed'; font-weight:800; color:#ffd700;">${s.prob || 'H 0% | D 0% | A 0%'}</td>
+            <td style="font-family:'Barlow Condensed'; font-weight:800; color:#ffd700;">${s.prob}</td>
         </tr>
     `).join('');
 }
@@ -477,18 +443,14 @@ function copyMatch(text) {
 
 function renderCards() {
     const container = document.getElementById('matches');
-    if(matchResults.length === 0) {
-        container.innerHTML = `<div style="grid-column: 1/-1;" class="loading-text">Belum ada kartu prediksi hari ini.</div>`;
-        return;
-    }
     container.innerHTML = matchResults.map(m => `
         <div class="card">
             <div class="teams">
-                <div class="team"><img src="${m.home_logo || 'https://via.placeholder.com/60'}"><p>${m.home}</p></div>
+                <div class="team"><img src="${m.homeLogo}"><p>${m.home}</p></div>
                 <div class="vs">VS</div>
-                <div class="team"><img src="${m.away_logo || 'https://via.placeholder.com/60'}"><p>${m.away}</p></div>
+                <div class="team"><img src="${m.awayLogo}"><p>${m.away}</p></div>
             </div>
-            <div class="score">${m.score || '?-?'}</div>
+            <div class="score">${m.score}</div>
             <button class="copy-btn" onclick="copyMatch('Prediksi ${m.home} vs ${m.away}: Skor ${m.score} - Analisa by RINJANI4D')">
                 📋 Salin Prediksi
             </button>
@@ -520,8 +482,9 @@ document.getElementById('nextBtn').onclick = () => move((idx + 1) % slides.lengt
 document.getElementById('prevBtn').onclick = () => move((idx - 1 + slides.length) % slides.length);
 setInterval(() => move((idx + 1) % slides.length), 3000);
 
-// Menjalankan penarikan data database saat pertama kali dibuka
-fetchDataFromSupabase();
+// Inisialisasi awal saat halaman dimuat
+filterLeague('ALL');
+renderCards();
 </script>
 </body>
 </html>
