@@ -744,25 +744,28 @@
         </div>
 
         <div class="section-divider"><span>Data Tim Tuan Rumah</span></div>
-
         <div class="form-grid form-grid-2">
           <div class="form-group">
             <label>Nama Tim Tuan Rumah</label>
             <input type="text" id="h-home" placeholder="Arsenal">
           </div>
           <div class="form-group">
-            <label>Logo Tim Tuan Rumah</label>
-            <div class="file-upload-area" onclick="document.getElementById('h-home-file').click()">
-              <input type="file" id="h-home-file" accept="image/*" onchange="handleLogoUpload(this,'h-home-preview','h-home-name','h-home-b64')">
-              <div class="file-upload-label">📁 Klik untuk pilih gambar<br><span>PNG / JPG / WebP</span></div>
-            </div>
-            <div class="logo-preview-wrap">
-              <img id="h-home-preview" class="logo-preview-img">
-              <span id="h-home-name" class="logo-preview-name"></span>
-            </div>
+            <label>URL Logo Tim Tuan Rumah (Opsional)</label>
+            <input type="text" id="h-home-b64" placeholder="Contoh: https://site.com/logo-home.png" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; color:#fff; border-radius:6px; font-size:14px;">
           </div>
         </div>
 
+        <div class="section-divider"><span>Data Tim Tamu</span></div>
+        <div class="form-grid form-grid-2">
+          <div class="form-group">
+            <label>Nama Tim Tamu</label>
+            <input type="text" id="h-away" placeholder="Chelsea">
+          </div>
+          <div class="form-group">
+            <label>URL Logo Tim Tamu (Opsional)</label>
+            <input type="text" id="h-away-b64" placeholder="Contoh: https://site.com/logo-away.png" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; color:#fff; border-radius:6px; font-size:14px;">
+          </div>
+        </div>
         <div class="section-divider"><span>Data Tim Tamu</span></div>
 
         <div class="form-grid form-grid-2">
