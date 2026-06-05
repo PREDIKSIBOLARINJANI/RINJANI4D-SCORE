@@ -436,7 +436,7 @@
 
 <script>
 // ═══════════════════════════════════════════════════════
-// SUPABASE CONFIG (PASANGAN SUDAH COCOK & VALID)
+// SUPABASE CONFIG (PASANGAN VALDAS & FIXED)
 // ═══════════════════════════════════════════════════════
 const SUPABASE_URL  = 'https://bejygkgfpeuhphrrrlmy.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlanlna2dmcGV1aHBocnJlbG15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzIwNTgsImV4cCI6MjA5NjIwODA1OH0.S8zDfyUu3tcmFeqZXkzj-nPkdW14zm-mLyYr3iBGvcM';
@@ -444,289 +444,150 @@ const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFz
 const { createClient } = supabase;
 const db = createClient(SUPABASE_URL, SUPABASE_ANON);
 
-// ═══════════════════════════════════════════════════════
-// STATE
-// ═══════════════════════════════════════════════════════
 let allSchedules = [];
 let sliderIdx    = 0;
 let sliderSlides = [];
 
-// ═══════════════════════════════════════════════════════
 // BURGER MENU
-// ═══════════════════════════════════════════════════════
 const burger       = document.getElementById('burger');
 const dropdownCard = document.getElementById('dropdownCard');
-
 burger.addEventListener('click', e => {
     dropdownCard.classList.toggle('active');
     e.stopPropagation();
 });
-document.addEventListener('click', () => dropdownCard.classList.remove('remove'));
+document.addEventListener('click', () => dropdownCard.classList.remove('active'));
 
-// ═══════════════════════════════════════════════════════
-// LOAD MARQUEE (Running Text)
-// ═══════════════════════════════════════════════════════
+// LOAD MARQUEE
 async function loadMarquee() {
     try {
-        const { data, error } = await db
-            .from('marquee')
-            .select('text')
-            .eq('is_active', true)
-            .order('created_at', { ascending: false });
-
+        const { data, error } = await db.from('marquee').select('text').eq('is_active', true).order('created_at', { ascending: false });
         if (error) throw error;
-
         if (data && data.length > 0) {
-            const texts = data.map(r => r.text).join('   ●   ');
-            document.getElementById('marqueeText').textContent = texts;
+            document.getElementById('marqueeText').textContent = data.map(r => r.text).join('   ●   ');
         } else {
-            document.getElementById('marqueeText').textContent = "📢 RINJANI4D: Prediksi Terakurat & Terpercaya Hari Ini!";
+            document.getElementById('marqueeText').textContent = "📢 RINJANI4D: Prediksi Terakurat Hari Ini!";
         }
     } catch (e) {
-        console.warn('Marquee load error:', e.message);
-        document.getElementById('marqueeText').textContent = "📢 RINJANI4D: Selamat Datang di Pusat Analisa & Prediksi Bola Terakurat!";
+        document.getElementById('marqueeText').textContent = "📢 RINJANI4D: Prediksi Terakurat Hari Ini!";
     }
 }
 
-// ═══════════════════════════════════════════════════════
-// LOAD BANNER SLIDER
-// ═══════════════════════════════════════════════════════
+// LOAD BANNER
 async function loadBanner() {
     try {
-        const { data, error } = await db
-            .from('banner')
-            .select('*')
-            .eq('is_active', true)
-            .order('sort_order', { ascending: true });
-
+        const { data, error } = await db.from('banner').select('*').eq('is_active', true).order('sort_order', { ascending: true });
         if (error) throw error;
-
-        const sliderWrapper  = document.getElementById('slider');
-        const dotsContainer  = document.getElementById('dotsContainer');
-
-        if (!data || data.length === 0) {
-            // Fallback Banner Default jika database kosong
-            sliderWrapper.innerHTML = '<div class="slide"><img src="https://i.imgur.com/VDY1cAE.png" alt="Banner Default"></div>';
-            return;
-        }
-
-        sliderWrapper.innerHTML = '';
-        dotsContainer.innerHTML = '';
+        if (!data || data.length === 0) return;
+        const sw = document.getElementById('slider');
+        const dc = document.getElementById('dotsContainer');
+        sw.innerHTML = ''; dc.innerHTML = '';
         sliderSlides = data;
-
         data.forEach((banner, i) => {
-            const slide = document.createElement('div');
-            slide.className = 'slide';
-            const img = document.createElement('img');
-            img.src = banner.image_url;
-            img.alt = banner.alt_text || 'Banner';
-            slide.appendChild(img);
-            sliderWrapper.appendChild(slide);
-
-            const dot = document.createElement('div');
-            dot.className = 'dot' + (i === 0 ? ' active' : '');
-            dot.addEventListener('click', () => moveSlider(i));
-            dotsContainer.appendChild(dot);
+            const slide = document.createElement('div'); slide.className = 'slide';
+            const img = document.createElement('img'); img.src = banner.image_url; img.alt = banner.alt_text || 'Banner';
+            slide.appendChild(img); sw.appendChild(slide);
+            const dot = document.createElement('div'); dot.className = 'dot' + (i === 0 ? ' active' : '');
+            dot.addEventListener('click', () => moveSlider(i)); dc.appendChild(dot);
         });
-
-        sliderIdx = 0;
-    } catch (e) {
-        console.warn('Banner load error:', e.message);
-        // Tetap tampilkan banner default jika database gagal diakses
-        document.getElementById('slider').innerHTML = '<div class="slide"><img src="https://i.imgur.com/VDY1cAE.png" alt="Banner Default"></div>';
-    }
+    } catch (e) { console.warn('Banner load error:', e.message); }
 }
 
 function moveSlider(n) {
     if (!sliderSlides.length) return;
     sliderIdx = n;
     document.getElementById('slider').style.transform = `translateX(-${sliderIdx * 100}%)`;
-    document.querySelectorAll('.dot').forEach((d, i) => {
-        d.className = 'dot' + (i === sliderIdx ? ' active' : '');
-    });
+    document.querySelectorAll('.dot').forEach((d, i) => { d.className = 'dot' + (i === sliderIdx ? ' active' : ''); });
 }
 
 function initSliderControls() {
-    const nextBtn = document.getElementById('nextBtn');
-    const prevBtn = document.getElementById('prevBtn');
-    
-    if(nextBtn && prevBtn) {
-        nextBtn.onclick = () => moveSlider((sliderIdx + 1) % (sliderSlides.length || 1));
-        prevBtn.onclick = () => moveSlider((sliderIdx - 1 + (sliderSlides.length || 1)) % (sliderSlides.length || 1));
-    }
+    document.getElementById('nextBtn').onclick = () => moveSlider((sliderIdx + 1) % (sliderSlides.length || 1));
+    document.getElementById('prevBtn').onclick = () => moveSlider((sliderIdx - 1 + (sliderSlides.length || 1)) % (sliderSlides.length || 1));
     setInterval(() => moveSlider((sliderIdx + 1) % (sliderSlides.length || 1)), 3500);
 }
 
-// ═══════════════════════════════════════════════════════
-// LOAD JADWAL (Schedule Table)
-// ═══════════════════════════════════════════════════════
+// LOAD JADWAL
 async function loadJadwal() {
     try {
-        const { data, error } = await db
-            .from('matches') 
-            .select('*')
-            .order('match_time', { ascending: true });
-
+        const { data, error } = await db.from('jadwal').select('*').order('created_at', { ascending: false });
         if (error) throw error;
-
         allSchedules = data || [];
         buildLeagueTabs();
         renderTable(allSchedules);
     } catch (e) {
-        console.error("Gagal memuat jadwal:", e.message);
-        document.getElementById('scheduleBody').innerHTML =
-            `<tr><td colspan="4" style="text-align:center;color:#fc8181;padding:20px;">
-                ⚠️ Gagal terhubung ke server data. Silakan refresh halaman atau periksa koneksi internet Anda.
-            </td></tr>`;
+        document.getElementById('scheduleBody').innerHTML = `<tr><td colspan="4" style="text-align:center;color:#fc8181;padding:20px;">Gagal memuat jadwal.</td></tr>`;
     }
 }
 
 function buildLeagueTabs() {
     const leagues = ['ALL', ...new Set(allSchedules.map(s => s.league).filter(Boolean))];
-    const tabFilter = document.getElementById('tabFilter');
-    if (!tabFilter) return;
-    
-    tabFilter.innerHTML = leagues.map(l =>
-        `<button class="tab-btn${l === 'ALL' ? ' active' : ''}" onclick="filterLeague('${l}')">
-            ${l === 'ALL' ? 'SEMUA' : l}
-        </button>`
-    ).join('');
+    document.getElementById('tabFilter').innerHTML = leagues.map(l => `<button class="tab-btn${l === 'ALL' ? ' active' : ''}" onclick="filterLeague('${l}')">${l === 'ALL' ? 'SEMUA' : l}</button>`).join('');
 }
 
 function filterLeague(league) {
-    document.querySelectorAll('.tab-btn').forEach(btn => {
-        const label = btn.textContent.trim();
-        btn.classList.toggle('active',
-            (league === 'ALL' && label === 'SEMUA') || label === league
-        );
-    });
-    const filtered = league === 'ALL'
-        ? allSchedules
-        : allSchedules.filter(s => s.league === league);
-    renderTable(filtered);
+    document.querySelectorAll('.tab-btn').forEach(btn => { btn.classList.toggle('active', (league === 'ALL' && btn.textContent.trim() === 'SEMUA') || btn.textContent.trim() === league); });
+    renderTable(league === 'ALL' ? allSchedules : allSchedules.filter(s => s.league === league));
 }
 
 function renderTable(data) {
     const body = document.getElementById('scheduleBody');
-    if (!body) return;
-    
-    if (!data.length) {
-        body.innerHTML = `<tr><td colspan="4"><div class="state-msg">Belum ada jadwal analisa tersedia saat ini.</div></td></tr>`;
-        return;
-    }
-
+    if (!data.length) { body.innerHTML = `<tr><td colspan="4"><div class="state-msg">Tidak ada jadwal tersedia</div></td></tr>`; return; }
     body.innerHTML = data.map(s => {
-        let waktuDisplay = '—';
-        if (s.match_time) {
-            const dateObj = new Date(s.match_time);
-            waktuDisplay = dateObj.toLocaleTimeString('id-ID', { hour: '2-digit', minute: '2-digit' }) + ' WIB';
-        }
-
-        const homeLogo = s.logo1_url
-            ? `<img src="${s.logo1_url}" style="width:22px;height:22px;object-fit:contain;border-radius:50%;vertical-align:middle;margin-right:4px;background:rgba(255,255,255,0.1);" onerror="this.style.display='none'">`
-            : '';
-        const awayLogo = s.logo2_url
-            ? `<img src="${s.logo2_url}" style="width:22px;height:22px;object-fit:contain;border-radius:50%;vertical-align:middle;margin-left:4px;background:rgba(255,255,255,0.1);" onerror="this.style.display='none'">`
-            : '';
-
-        const matchDisplay = `${homeLogo}${s.team1 || '—'} <span style="color:#ffd700;font-weight:800;margin:0 4px;">vs</span> ${s.team2 || '—'}${awayLogo}`;
-
+        const parts = (s.match_name || '').split(' vs ');
+        const home = parts[0]?.trim() || s.match_name || '—';
+        const away = parts[1]?.trim() || '';
+        const homeLogo = s.home_logo ? `<img src="${s.home_logo}" style="width:22px;height:22px;object-fit:contain;border-radius:50%;vertical-align:middle;margin-right:4px;background:rgba(255,255,255,0.1);" onerror="this.style.display='none'">` : '';
+        const awayLogo = s.away_logo ? `<img src="${s.away_logo}" style="width:22px;height:22px;object-fit:contain;border-radius:50%;vertical-align:middle;margin-left:4px;background:rgba(255,255,255,0.1);" onerror="this.style.display='none'">` : '';
         return `<tr>
-            <td style="white-space:nowrap;font-weight:700;color:#ffd700;">${waktuDisplay}</td>
+            <td style="white-space:nowrap;font-weight:700;color:#ffd700;">${s.time || '—'} WIB</td>
             <td style="color:#ffd700; font-weight:bold;">${s.league || '—'}</td>
-            <td>${matchDisplay}</td>
-            <td style="font-family:'Barlow Condensed'; font-weight:800; color:#ffd700;">${s.prediction || '—'}</td>
+            <td>${homeLogo}${home} ${away ? `<span style="color:#ffd700;font-weight:800;margin:0 4px;">vs</span> ${away}${awayLogo}` : ''}</td>
+            <td style="font-family:'Barlow Condensed'; font-weight:800; color:#ffd700;">${s.prob || '—'}</td>
         </tr>`;
     }).join('');
 }
 
-// ═══════════════════════════════════════════════════════
-// LOAD HASIL (Match Result Cards)
-// ═══════════════════════════════════════════════════════
+// LOAD HASIL
 async function loadHasil() {
     try {
-        const { data, error } = await db
-            .from('matches') 
-            .select('*')
-            .order('match_time', { ascending: true });
-
+        const { data, error } = await db.from('hasil').select('*').order('created_at', { ascending: false });
         if (error) throw error;
         renderCards(data || []);
     } catch (e) {
-        console.error("Gagal memuat hasil kartu:", e.message);
-        document.getElementById('matches').innerHTML =
-            `<div style="grid-column:1/-1;text-align:center;color:#fc8181;padding:30px;">
-                ⚠️ Gagal memuat data kartu analisa.
-            </div>`;
+        document.getElementById('matches').innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#fc8181;padding:30px;">Gagal memuat hasil.</div>`;
     }
 }
 
 function renderCards(data) {
     const container = document.getElementById('matches');
-    if (!container) return;
-    
-    if (!data.length) {
-        container.innerHTML = `<div style="grid-column:1/-1;"><div class="state-msg">Belum ada kartu prediksi tersedia.</div></div>`;
-        return;
-    }
-
+    if (!data.length) { container.innerHTML = `<div style="grid-column:1/-1;"><div class="state-msg">Belum ada hasil pertandingan</div></div>`; return; }
     container.innerHTML = data.map(m => {
-        const homeLogo = m.logo1_url
-            ? `<img src="${m.logo1_url}" onerror="this.src='https://i.imgur.com/placeholder.png'">`
-            : `<div class="team-logo-placeholder">⚽</div>`;
-        const awayLogo = m.logo2_url
-            ? `<img src="${m.logo2_url}" onerror="this.src='https://i.imgur.com/placeholder.png'">`
-            : `<div class="team-logo-placeholder">⚽</div>`;
-
-        const cleanTeam1 = (m.team1 || '—').replace(/'/g, "\\'");
-        const cleanTeam2 = (m.team2 || '—').replace(/'/g, "\\'");
-        const cleanPred  = (m.prediction || '—').replace(/'/g, "\\'");
-        const predText = `Prediksi ${cleanTeam1} vs ${cleanTeam2}: Skor ${cleanPred} — Analisa by RINJANI4D`;
-
+        const homeLogo = m.home_logo ? `<img src="${m.home_logo}" onerror="this.replaceWith(createPlaceholder())">` : `<div class="team-logo-placeholder">⚽</div>`;
+        const awayLogo = m.away_logo ? `<img src="${m.away_logo}" onerror="this.replaceWith(createPlaceholder())">` : `<div class="team-logo-placeholder">⚽</div>`;
+        const predText = `Prediksi ${m.home} vs ${m.away}: Skor ${m.score} — Analisa by RINJANI4D`;
         return `<div class="card">
             <div class="teams">
-                <div class="team">${homeLogo}<p>${m.team1 || '—'}</p></div>
+                <div class="team">${homeLogo}<p>${m.home || '—'}</p></div>
                 <div class="vs">VS</div>
-                <div class="team">${awayLogo}<p>${m.team2 || '—'}</p></div>
+                <div class="team">${awayLogo}<p>${m.away || '—'}</p></div>
             </div>
-            <div class="score" style="font-size: 20px; font-weight: normal; margin: 15px 0;">${m.prediction || '—'}</div>
-            <button class="copy-btn" onclick="copyMatch('${predText}')">
-                📋 Salin Prediksi
-            </button>
+            <div class="score">${m.score || '—'}</div>
+            <button class="copy-btn" onclick="copyMatch('${predText.replace(/'/g,"\\'")}')">📋 Salin Prediksi</button>
             <a href="https://rinjaniman.com" class="card-btn">PASANG SEKARANG</a>
         </div>`;
     }).join('');
 }
 
-// ═══════════════════════════════════════════════════════
-// COPY PREDIKSI
-// ═══════════════════════════════════════════════════════
+function createPlaceholder() { const d = document.createElement('div'); d.className = 'team-logo-placeholder'; d.textContent = '⚽'; return d; }
+
 function copyMatch(text) {
-    navigator.clipboard.writeText(text).then(() => {
-        alert('✅ Prediksi berhasil disalin!');
-    }).catch(() => {
-        const el = document.createElement('textarea');
-        el.value = text;
-        document.body.appendChild(el);
-        el.select();
-        document.execCommand('copy');
-        document.body.removeChild(el);
-        alert('✅ Prediksi berhasil disalin!');
+    navigator.clipboard.writeText(text).then(() => { alert('✅ Prediksi berhasil disalin!'); }).catch(() => {
+        const el = document.createElement('textarea'); el.value = text; document.body.appendChild(el); el.select(); document.execCommand('copy'); document.body.removeChild(el); alert('✅ Prediksi berhasil disalin!');
     });
 }
 
-// ═══════════════════════════════════════════════════════
-// INIT AMAN (Jalur Mandiri - Tidak Saling Menggagalkan)
-// ═══════════════════════════════════════════════════════
 async function init() {
-    // Dipisah satu per satu agar jika salah satu tabel error, yang lain tetap lancar jaya!
-    await loadMarquee();
-    await loadBanner();
-    await loadJadwal();
-    await loadHasil();
-    initSliderControls();
+    await loadMarquee(); await loadBanner(); await loadJadwal(); await loadHasil(); initSliderControls();
 }
-
 document.addEventListener('DOMContentLoaded', init);
 </script>
 </body>
