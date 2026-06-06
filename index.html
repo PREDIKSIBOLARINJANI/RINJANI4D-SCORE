@@ -438,7 +438,6 @@
 // ═══════════════════════════════════════════════════════
 // SUPABASE CONFIG (PASANGAN VALDAS & FIXED)
 // ═══════════════════════════════════════════════════════
-
 const SUPABASE_URL  = 'https://bejygkgfpeuhphrrelmy.supabase.co';
 const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlanlna2dmcGV1aHBocnJlbG15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzIwNTgsImV4cCI6MjA5NjIwODA1OH0.S8zDfyUu3tcmFeqZXkzj-nPkdW14zm-mLyYr3iBGvcM';
 const { createClient } = supabase;
@@ -589,6 +588,26 @@ async function init() {
     await loadMarquee(); await loadBanner(); await loadJadwal(); await loadHasil(); initSliderControls();
 }
 document.addEventListener('DOMContentLoaded', init);
+
+// ═══════════════════════════════════════════════════════
+// KODE BARU: SUPABASE REALTIME CHANNEL LISTENER
+// ═══════════════════════════════════════════════════════
+
+// 1. Dengarkan perubahan data pada tabel 'jadwal'
+db.channel('realtime-jadwal')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'jadwal' }, (payload) => {
+      console.log('Ada pembaruan jadwal pertandingan:', payload);
+      loadJadwal(); // Memuat ulang tabel jadwal otomatis di layar depan
+  })
+  .subscribe();
+
+// 2. Dengarkan perubahan data pada tabel 'hasil'
+db.channel('realtime-hasil')
+  .on('postgres_changes', { event: '*', schema: 'public', table: 'hasil' }, (payload) => {
+      console.log('Ada pembaruan hasil pertandingan:', payload);
+      loadHasil(); // Memuat ulang kartu hasil otomatis di layar depan
+  })
+  .subscribe();
 </script>
 </body>
 </html>
