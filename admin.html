@@ -629,11 +629,10 @@
         </div>
 
         <!-- Row 1: Waktu & Liga -->
-        <div class="form-grid form-grid-2">
-          <div class="form-group">
-            <label>Waktu (WIB)</label>
-            <input type="time" id="j-time">
-          </div>
+       <div class="form-group">
+  <label>Waktu (WIB)</label>
+  <input type="text" id="j-time" placeholder="Contoh: 22:00" maxlength="5" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; color:#fff; border-radius:6px; font-size:14px;">
+       </div>
           <div class="form-group">
             <label>Liga</label>
             <select id="j-league" onchange="handleLeagueChange('j')">
