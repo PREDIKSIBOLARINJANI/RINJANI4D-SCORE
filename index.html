@@ -480,37 +480,112 @@ async function loadMarquee() {
     }
 }
 
-// LOAD BANNER
+// ═══════════════════════════════════════════════════════
+// NEW INFINITE BANNER SLIDER (SMOOTH LOOP)
+// ═══════════════════════════════════════════════════════
+let isTransitioning = false;
+
 async function loadBanner() {
     try {
         const { data, error } = await db.from('banner').select('*').eq('is_active', true).order('sort_order', { ascending: true });
         if (error) throw error;
         if (!data || data.length === 0) return;
+        
         const sw = document.getElementById('slider');
         const dc = document.getElementById('dotsContainer');
         sw.innerHTML = ''; dc.innerHTML = '';
+        
         sliderSlides = data;
-        data.forEach((banner, i) => {
+        sliderIdx = 1; // Mulai dari index 1 (karena index 0 berisi klon gambar terakhir)
+
+        // 1. Buat Indikator Dots asli
+        data.forEach((_, i) => {
+            const dot = document.createElement('div'); 
+            dot.className = 'dot' + (i === 0 ? ' active' : '');
+            dot.addEventListener('click', () => goToSlide(i + 1)); 
+            dc.appendChild(dot);
+        });
+
+        // 2. Tambahkan Klon Gambar Terakhir di paling depan
+        const lastClone = document.createElement('div'); lastClone.className = 'slide';
+        const imgLast = document.createElement('img'); imgLast.src = data[data.length - 1].image_url;
+        lastClone.appendChild(imgLast); sw.appendChild(lastClone);
+
+        // 3. Tambahkan Semua Gambar Asli dari Supabase
+        data.forEach((banner) => {
             const slide = document.createElement('div'); slide.className = 'slide';
             const img = document.createElement('img'); img.src = banner.image_url; img.alt = banner.alt_text || 'Banner';
             slide.appendChild(img); sw.appendChild(slide);
-            const dot = document.createElement('div'); dot.className = 'dot' + (i === 0 ? ' active' : '');
-            dot.addEventListener('click', () => moveSlider(i)); dc.appendChild(dot);
         });
+
+        // 4. Tambahkan Klon Gambar Pertama di paling belakang
+        const firstClone = document.createElement('div'); firstClone.className = 'slide';
+        const imgFirst = document.createElement('img'); imgFirst.src = data[0].image_url;
+        firstClone.appendChild(imgFirst); sw.appendChild(firstClone);
+
+        // Set posisi awal container ke gambar asli pertama tanpa animasi
+        sw.style.transition = 'none';
+        sw.style.transform = `translateX(-${sliderIdx * 100}%)`;
+
     } catch (e) { console.warn('Banner load error:', e.message); }
 }
 
-function moveSlider(n) {
-    if (!sliderSlides.length) return;
-    sliderIdx = n;
-    document.getElementById('slider').style.transform = `translateX(-${sliderIdx * 100}%)`;
-    document.querySelectorAll('.dot').forEach((d, i) => { d.className = 'dot' + (i === sliderIdx ? ' active' : ''); });
+function moveSliderSmooth(targetIdx) {
+    if (isTransitioning || !sliderSlides.length) return;
+    isTransitioning = true;
+    
+    const sw = document.getElementById('slider');
+    sliderIdx = targetIdx;
+
+    // Jalankan efek geser mulus
+    sw.style.transition = 'transform 0.5s ease-in-out';
+    sw.style.transform = `translateX(-${sliderIdx * 100}%)`;
+
+    updateDots();
 }
 
+function goToSlide(targetIdx) {
+    moveSliderSmooth(targetIdx);
+}
+
+function updateDots() {
+    let dotIdx = sliderIdx - 1;
+    if (sliderIdx === 0) dotIdx = sliderSlides.length - 1;
+    if (sliderIdx === sliderSlides.length + 1) dotIdx = 0;
+
+    document.querySelectorAll('.dot').forEach((d, i) => { 
+        d.className = 'dot' + (i === dotIdx ? ' active' : ''); 
+    });
+}
+
+// Efek sulap: Melompat instan tanpa animasi saat transisi klon selesai
+document.getElementById('slider').addEventListener('transitionend', () => {
+    const sw = document.getElementById('slider');
+    isTransitioning = false;
+
+    // Jika mentok di klon paling akhir, balikkan instan ke gambar asli pertama
+    if (sliderIdx === sliderSlides.length + 1) {
+        sw.style.transition = 'none';
+        sliderIdx = 1;
+        sw.style.transform = `translateX(-${sliderIdx * 100}%)`;
+    }
+    
+    // Jika mentok di klon paling awal, balikkan instan ke gambar asli terakhir
+    if (sliderIdx === 0) {
+        sw.style.transition = 'none';
+        sliderIdx = sliderSlides.length;
+        sw.style.transform = `translateX(-${sliderIdx * 100}%)`;
+    }
+});
+
 function initSliderControls() {
-    document.getElementById('nextBtn').onclick = () => moveSlider((sliderIdx + 1) % (sliderSlides.length || 1));
-    document.getElementById('prevBtn').onclick = () => moveSlider((sliderIdx - 1 + (sliderSlides.length || 1)) % (sliderSlides.length || 1));
-    setInterval(() => moveSlider((sliderIdx + 1) % (sliderSlides.length || 1)), 3500);
+    document.getElementById('nextBtn').onclick = () => moveSliderSmooth(sliderIdx + 1);
+    document.getElementById('prevBtn').onclick = () => moveSliderSmooth(sliderIdx - 1);
+    
+    // Geser otomatis setiap 3.5 detik ke arah kanan secara berkesinambungan
+    setInterval(() => {
+        moveSliderSmooth(sliderIdx + 1);
+    }, 3500);
 }
 
 // LOAD JADWAL
