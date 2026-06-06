@@ -647,7 +647,17 @@ function renderCards(data) {
         const homeLogo = m.home_logo ? `<img src="${m.home_logo}" onerror="this.replaceWith(createPlaceholder())">` : `<div class="team-logo-placeholder">⚽</div>`;
         const awayLogo = m.away_logo ? `<img src="${m.away_logo}" onerror="this.replaceWith(createPlaceholder())">` : `<div class="team-logo-placeholder">⚽</div>`;
         const predText = `Prediksi ${m.home} vs ${m.away}: Skor ${m.score} — Analisa by RINJANI4D`;
+        
+        // Mengambil data waktu (mendukung nama kolom 'match_time' ataupun 'waktu')
+        const waktuPertandingan = m.match_time || m.waktu || '';
+
         return `<div class="card">
+            <!-- Tampilan Tanggal & Waktu di Atas Logo Tim -->
+            ${waktuPertandingan ? `
+            <div class="match-time-display" style="color: #ffd700; font-size: 12px; font-weight: 700; margin-bottom: 15px; letter-spacing: 0.5px; opacity: 0.9;">
+                📅 ${waktuPertandingan}
+            </div>` : ''}
+
             <div class="teams">
                 <div class="team">${homeLogo}<p>${m.home || '—'}</p></div>
                 <div class="vs">VS</div>
