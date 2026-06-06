@@ -615,11 +615,14 @@ function renderTable(data) {
     const body = document.getElementById('scheduleBody');
     if (!data.length) { body.innerHTML = `<tr><td colspan="4"><div class="state-msg">Tidak ada jadwal tersedia</div></td></tr>`; return; }
     body.innerHTML = data.map(s => {
-        const parts = (s.match_name || '').split(' vs ');
+        // PERBAIKAN: Menggunakan Regex (/ vs /i) supaya fleksibel memecah 'vs', 'VS', atau 'Vs'
+        const parts = (s.match_name || '').split(/ vs /i);
         const home = parts[0]?.trim() || s.match_name || '—';
         const away = parts[1]?.trim() || '';
+        
         const homeLogo = s.home_logo ? `<img src="${s.home_logo}" style="width:22px;height:22px;object-fit:contain;border-radius:50%;vertical-align:middle;margin-right:4px;background:rgba(255,255,255,0.1);" onerror="this.style.display='none'">` : '';
         const awayLogo = s.away_logo ? `<img src="${s.away_logo}" style="width:22px;height:22px;object-fit:contain;border-radius:50%;vertical-align:middle;margin-left:4px;background:rgba(255,255,255,0.1);" onerror="this.style.display='none'">` : '';
+        
         return `<tr>
             <td style="white-space:nowrap;font-weight:700;color:#ffd700;">${s.time || '—'} WIB</td>
             <td style="color:#ffd700; font-weight:bold;">${s.league || '—'}</td>
@@ -628,7 +631,6 @@ function renderTable(data) {
         </tr>`;
     }).join('');
 }
-
 // LOAD HASIL
 async function loadHasil() {
     try {
