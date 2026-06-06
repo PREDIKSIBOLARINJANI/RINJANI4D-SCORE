@@ -583,7 +583,9 @@
       <div class="status-pill">
         <div class="status-dot"></div>Live
       </div>
-      <button class="btn btn-ghost btn-sm" onclick="logout()">Keluar</button>
+     <button class="btn-logout" onclick="handleLogout()">⚠️ Keluar Panel</button>
+
+<a href="#" onclick="handleLogout()">Keluar</a>
     </div>
   </div>
 
@@ -916,34 +918,33 @@ const ADMIN_PASSWORD = 'rinjani4d2025'; // ← Ganti sesuai kebutuhan
 const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON);
 
 // ═══════════════════════════════════════════
-// LOGIN / LOGOUT
+// SUPABASE AUTH PROTEKSI & LOGOUT
 // ═══════════════════════════════════════════
-function doLogin() {
-  const pass = document.getElementById('login-pass').value;
-  if (pass === ADMIN_PASSWORD) {
-    sessionStorage.setItem('r4d_admin', '1');
-    document.getElementById('login-screen').style.display = 'none';
-    initApp();
+
+// 1. Cek secara otomatis apakah user sudah login atau belum saat halaman admin dibuka
+async function checkAuth() {
+  const { data: { session }, error } = await db.auth.getSession();
+  
+  // Jika tidak ada session (belum login), langsung tendang balik ke login.html
+  if (!session || error) {
+    window.location.href = 'login.html';
   } else {
-    document.getElementById('login-err').textContent = '❌ Kata sandi salah!';
+    // Jika aman dan terverifikasi login, jalankan aplikasi admin
+    initApp();
   }
 }
-document.getElementById('login-pass').addEventListener('keydown', e => {
-  if (e.key === 'Enter') doLogin();
-});
 
-function logout() {
-  sessionStorage.removeItem('r4d_admin');
-  location.reload();
-}
+// Jalankan fungsi cek keamanan di atas secara langsung
+checkAuth();
 
-if (sessionStorage.getItem('r4d_admin') === '1') {
-  document.getElementById('login-screen').style.display = 'none';
-  window.addEventListener('DOMContentLoaded', initApp);
-} else {
-  window.addEventListener('DOMContentLoaded', () => {
-    document.getElementById('login-pass').focus();
-  });
+// 2. Fungsi Tombol Keluar (Logout) Resmi Supabase
+async function handleLogout() {
+  const { error } = await db.auth.signOut();
+  if (error) {
+    toast('Gagal keluar: ' + error.message, 'error');
+  } else {
+    window.location.href = 'login.html'; // Pindah ke halaman login setelah sukses logout
+  }
 }
 
 // ═══════════════════════════════════════════
