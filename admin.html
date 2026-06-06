@@ -742,6 +742,13 @@
           </div>
         </div>
 
+        <div class="form-grid form-grid-1" style="margin-top: 12px;">
+          <div class="form-group">
+            <label>Waktu & Tanggal Pertandingan Selesai (WIB)</label>
+            <input type="text" id="h-time" placeholder="Contoh: Sabtu, 06 Jun - 22:00 WIB" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; color:#fff; border-radius:6px; font-size:14px;">
+          </div>
+        </div>
+
         <div class="section-divider"><span>Data Tim Tuan Rumah</span></div>
         <div class="form-grid form-grid-2">
           <div class="form-group">
@@ -1200,19 +1207,22 @@ async function addHasil() {
   const home      = document.getElementById('h-home').value.trim();
   const away      = document.getElementById('h-away').value.trim();
   const score     = document.getElementById('h-score').value.trim();
+  const match_time = document.getElementById('h-time').value.trim(); // -> MENANGKAP INPUT WAKTU BARU
   const home_logo = document.getElementById('h-home-b64').value || null;
   const away_logo = document.getElementById('h-away-b64').value || null;
 
   if (!league) return toast('Nama liga wajib diisi!', 'error');
+  if (!score)  return toast('Skor wajib diisi!', 'error');
+  if (!match_time) return toast('Waktu & tanggal wajib diisi!', 'error'); // -> VALIDASI WAJIB DIISI
   if (!home)   return toast('Nama tim tuan rumah wajib diisi!', 'error');
   if (!away)   return toast('Nama tim tamu wajib diisi!', 'error');
-  if (!score)  return toast('Skor wajib diisi!', 'error');
 
   const btn = document.getElementById('btn-add-hasil');
   setBtnLoading(btn, true, 'Menyimpan...');
 
   try {
-    const { error } = await db.from('hasil').insert([{ league, home, away, score, home_logo, away_logo }]);
+    // SINKRONISASI KE SUPABASE: Pastikan di tabel 'hasil' database Supabase kamu sudah ada kolom bernama 'match_time' atau 'waktu'
+    const { error } = await db.from('hasil').insert([{ league, home, away, score, match_time, home_logo, away_logo }]);
     if (error) throw error;
     toast('Hasil berhasil disimpan!');
     resetHasilForm();
@@ -1232,6 +1242,7 @@ function resetHasilForm() {
   });
   document.getElementById('h-league').value = 'EPL';
   document.getElementById('h-custom-wrap').style.display = 'none';
+  document.getElementById('h-time').value = '';
 }
 
 // ═══════════════════════════════════════════
