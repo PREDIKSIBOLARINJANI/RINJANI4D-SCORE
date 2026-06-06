@@ -434,10 +434,10 @@ src="https://i.imgur.com/DBahwmx.png" alt="Slide 14">
   <div style="width: 60px; height: 3px; background: #ffd700; margin: 8px auto 0 auto; border-radius: 2px;"></div>
 </div>
 
-<!-- KARTU HASIL PERTANDINGAN -->
+<!-- KARTU PREDIKSI SKOR AKURAT -->
 <main id="matches" class="match-grid">
     <div style="grid-column:1/-1;text-align:center;padding:30px;color:rgba(255,255,255,0.4);">
-        <span class="loader-ring"></span>Memuat hasil pertandingan...
+        <span class="loader-ring"></span>Memuat PREDIKSI SKOR AKURAT...
     </div>
 </main>
 
@@ -642,7 +642,7 @@ async function loadHasil() {
 
 function renderCards(data) {
     const container = document.getElementById('matches');
-    if (!data.length) { container.innerHTML = `<div style="grid-column:1/-1;"><div class="state-msg">Belum ada hasil pertandingan</div></div>`; return; }
+    if (!data.length) { container.innerHTML = `<div style="grid-column:1/-1;"><div class="state-msg">Belum ada PREDIKSI SKOR AKURAT</div></div>`; return; }
     container.innerHTML = data.map(m => {
         const homeLogo = m.home_logo ? `<img src="${m.home_logo}" onerror="this.replaceWith(createPlaceholder())">` : `<div class="team-logo-placeholder">⚽</div>`;
         const awayLogo = m.away_logo ? `<img src="${m.away_logo}" onerror="this.replaceWith(createPlaceholder())">` : `<div class="team-logo-placeholder">⚽</div>`;
@@ -688,7 +688,7 @@ db.channel('realtime-jadwal')
 // 2. Dengarkan perubahan data pada tabel 'hasil'
 db.channel('realtime-hasil')
   .on('postgres_changes', { event: '*', schema: 'public', table: 'hasil' }, (payload) => {
-      console.log('Ada pembaruan hasil pertandingan:', payload);
+      console.log('Ada pembaruan PREDIKSI SKOR AKURAT:', payload);
       loadHasil(); // Memuat ulang kartu hasil otomatis di layar depan
   })
   .subscribe();
