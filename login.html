@@ -1,0 +1,115 @@
+<!DOCTYPE html>
+<html lang="id">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>RINJANI4D — Admin Login</title>
+    <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; font-family: 'Barlow', sans-serif; }
+        body {
+            background: #000 url('https://i.imgur.com/zGbaikU.jpeg') no-repeat center center/cover;
+            min-height: 100vh;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            padding: 20px;
+        }
+        body::before {
+            content: ""; position: absolute; inset: 0; background: rgba(0,0,0,0.75); z-index: 1;
+        }
+        .login-card {
+            background: rgba(17, 17, 17, 0.95);
+            border: 1px solid #ffd700;
+            border-radius: 12px;
+            padding: 40px 30px;
+            width: 100%;
+            max-width: 400px;
+            z-index: 2;
+            box-shadow: 0 4px 20px rgba(255,215,0,0.2);
+            text-align: center;
+        }
+        .logo img { height: 45px; margin-bottom: 25px; }
+        h2 { color: #ffd700; margin-bottom: 25px; font-size: 22px; font-weight: 700; }
+        .form-group { text-align: left; margin-bottom: 20px; }
+        label { color: #ccc; display: block; margin-bottom: 8px; font-size: 14px; }
+        input {
+            width: 100%; padding: 12px; background: #222; border: 1px solid #444;
+            color: #fff; border-radius: 6px; font-size: 14px; transition: 0.3s;
+        }
+        input:focus { border-color: #ffd700; outline: none; }
+        button {
+            width: 100%; padding: 12px; background: #ffd700; color: #000;
+            border: none; border-radius: 6px; font-weight: 700; font-size: 15px;
+            cursor: pointer; margin-top: 10px; transition: 0.3s;
+        }
+        button:hover { background: #fff; }
+        .error-msg { color: #fc8181; font-size: 13px; margin-top: 15px; display: none; }
+    </style>
+</head>
+<body>
+
+<div class="login-card">
+    <div class="logo">
+        <img src="https://i.imgur.com/DuwlIfJ.png" alt="Logo">
+    </div>
+    <h2>PANEL KONTROL ADMIN</h2>
+    
+    <form id="loginForm">
+        <div class="form-group">
+            <label>Email Admin</label>
+            <input type="email" id="email" placeholder="admin@rinjani4d.com" required>
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••" required>
+        </div>
+        <button type="submit" id="btnLogin">MASUK PANEL</button>
+        <div class="error-msg" id="errorMsg">Email atau password salah!</div>
+    </form>
+</div>
+
+<script>
+    // Konfigurasi Supabase (Gunakan URL dan ANON KEY yang sama dengan index.html kamu)
+    const SUPABASE_URL  = 'https://bejygkgfpeuhphrrelmy.supabase.co';
+    const SUPABASE_ANON = 'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlanlna2dmcGV1aHBocnJlbG15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzIwNTgsImV4cCI6MjA5NjIwODA1OH0.S8zDfyUu3tcmFeqZXkzj-nPkdW14zm-mLyYr3iBGvcM';
+    const { createClient } = supabase;
+    const db = createClient(SUPABASE_URL, SUPABASE_ANON);
+
+    // Proses Handler Login
+    document.getElementById('loginForm').addEventListener('submit', async (e) => {
+        e.preventDefault();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
+        const btn = document.getElementById('btnLogin');
+        const err = document.getElementById('errorMsg');
+
+        btn.disabled = true;
+        btn.textContent = 'Memverifikasi...';
+        err.style.display = 'none';
+
+        // Panggil fungsi login bawaan Supabase
+        const { data, error } = await db.auth.signInWithPassword({ email, password });
+
+        if (error) {
+            err.textContent = 'Gagal Masuk: ' + error.message;
+            err.style.display = 'block';
+            btn.disabled = false;
+            btn.textContent = 'MASUK PANEL';
+        } else {
+            // Jika sukses, lempar langsung ke file admin.html
+            window.location.href = 'admin.html';
+        }
+    });
+
+    // Cek jika sudah login sebelumnya, langsung lempar ke admin.html
+    async function checkDirect() {
+        const { data: { session } } = await db.auth.getSession();
+        if (session) window.location.href = 'admin.html';
+    }
+    checkDirect();
+</script>
+
+</body>
+</html>
