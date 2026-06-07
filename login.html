@@ -88,19 +88,19 @@
         err.style.color = '#fc8181';
         err.style.display = 'none';
 
-        try {
-            // Kita tembak ke Netlify Function perantara untuk memverifikasi Auth Supabase secara aman
-            fetch('/.netlify/functions/simpan-data', {
-                method: 'POST',
-                headers: { 'Content-Type': 'application/json' },
-                body: JSON.stringify({ 
-                    aksi: 'login_auth', 
-                    email: email, 
-                    password: password 
-                })
-            });
+       try {
+    // TAMBAHKAN 'const response = await' DI DEPAN FETCH:
+    const response = await fetch('/.netlify/functions/simpan-data', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ 
+            aksi: 'login_auth', 
+            email: email, 
+            password: password 
+        })
+    });
 
-            const hasil = await response.json();
+    const hasil = await response.json();
 
             if (!response.ok) {
                 throw new Error(hasil.error || 'Email atau password salah.');
