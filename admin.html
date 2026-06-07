@@ -897,7 +897,11 @@
 // ═══════════════════════════════════════════
 // CONFIG & INIT
 // ═══════════════════════════════════════════
-
+const SUPABASE_URL = "https://bejygkgfpeuhphrrelmy.supabase.co";
+    const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlanlna2dmcGV1aHBocnJlbG15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzIwNTgsImV4cCI6MjA5NjIwODA1OH0.S8zDfyUu3tcmFeqZXkzj-nPkdW14zm-mLyYr3iBGvcM";
+    
+    // Ini variabel 'db' yang dicari-cari oleh fungsi checkAuth dan tabel-tabel kamu
+    const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
 
 // ═══════════════════════════════════════════
 // SUPABASE AUTH PROTEKSI & LOGOUT
