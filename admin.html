@@ -6,6 +6,10 @@
 <title>Admin Panel — RINJANI4D</title>
 <link href="https://images.linkcdn.cloud/V2/507/favicon/favicon-1888287302.png" rel="icon" type="image/png"/>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
+
+<!-- Supabase SDK v2 -->
+<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2/dist/umd/supabase.min.js"></script>
+
 <style>
   :root {
     --gold: #ffd700;
@@ -274,7 +278,7 @@
   .btn-sm { padding: 7px 13px; font-size: 12px; }
   .btn-xs { padding: 5px 10px; font-size: 11px; }
   .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
-  
+
   .btn-logout {
     background: rgba(229, 62, 62, 0.1);
     color: #fc8181;
@@ -311,12 +315,7 @@
   tbody td { padding: 12px 13px; font-size: 13px; vertical-align: middle; }
   .td-actions { display: flex; gap: 6px; flex-wrap: wrap; }
 
-  /* Team display */
-  .team-cell {
-    display: flex;
-    align-items: center;
-    gap: 8px;
-  }
+  .team-cell { display: flex; align-items: center; gap: 8px; }
   .team-logo-thumb {
     width: 30px; height: 30px;
     object-fit: contain;
@@ -404,8 +403,8 @@
     max-width: 320px;
   }
   .toast.success { border-color: var(--success); }
-  .toast.error { border-color: var(--danger); }
-  .toast.info { border-color: var(--info); }
+  .toast.error   { border-color: var(--danger); }
+  .toast.info    { border-color: var(--info); }
   @keyframes toastIn { from { transform: translateX(30px); opacity: 0; } to { transform: translateX(0); opacity: 1; } }
 
   /* ── LOADER ── */
@@ -552,7 +551,7 @@
           <label>Hari, Tanggal & Waktu (WIB)</label>
           <input type="text" id="j-time" placeholder="Contoh: Sabtu, 06 Jun - 22:00 WIB">
         </div>
-        
+
         <div class="form-group" style="margin-bottom: 14px;">
           <label>Liga</label>
           <select id="j-league" onchange="handleLeagueChange('j')">
@@ -565,7 +564,7 @@
             <option value="LIGUE 1">LIGUE 1</option>
             <option value="CUSTOM">-- Tulis Liga Baru --</option>
           </select>
-          <div class="custom-league-wrap" id="j-custom-wrap">
+          <div class="custom-league-wrap" id="j-custom-wrap" style="display:none;margin-top:8px;">
             <input type="text" id="j-custom-league" placeholder="Tulis nama liga... (misal: EURO 2026)">
           </div>
         </div>
@@ -609,12 +608,8 @@
           <table>
             <thead>
               <tr>
-                <th>Waktu</th>
-                <th>Liga</th>
-                <th>Tim Rumah</th>
-                <th>Tim Tamu</th>
-                <th>Peluang</th>
-                <th>Aksi</th>
+                <th>Waktu</th><th>Liga</th><th>Tim Rumah</th>
+                <th>Tim Tamu</th><th>Peluang</th><th>Aksi</th>
               </tr>
             </thead>
             <tbody id="jadwal-body">
@@ -644,7 +639,7 @@
               <option value="LIGUE 1">LIGUE 1</option>
               <option value="CUSTOM">-- Tulis Liga Baru --</option>
             </select>
-            <div class="custom-league-wrap" id="h-custom-wrap">
+            <div class="custom-league-wrap" id="h-custom-wrap" style="display:none;margin-top:8px;">
               <input type="text" id="h-custom-league" placeholder="Tulis nama liga... (misal: WORLD CUP 2026)">
             </div>
           </div>
@@ -699,13 +694,7 @@
         <div class="table-wrap">
           <table>
             <thead>
-              <tr>
-                <th>Liga</th>
-                <th>Tim Rumah</th>
-                <th>Skor</th>
-                <th>Tim Tamu</th>
-                <th>Aksi</th>
-              </tr>
+              <tr><th>Liga</th><th>Tim Rumah</th><th>Skor</th><th>Tim Tamu</th><th>Aksi</th></tr>
             </thead>
             <tbody id="hasil-body">
               <tr><td colspan="5"><div class="empty-state"><div class="loader"></div></div></td></tr>
@@ -807,60 +796,45 @@
       </div>
     </div>
 
-  </div></div><div id="overlay" class="overlay" onclick="closeSidebar()"></div>
+  </div>
+</div>
 
+<div id="overlay" class="overlay" onclick="closeSidebar()"></div>
 <div id="toast-container"></div>
 
 <script>
-// ═══════════════════════════════════════════
-// CONFIG & AUTH SYSTEM (NETLIFY FUNCTION)
-// ═══════════════════════════════════════════
-const API_URL = '/api/simpan-data';
+// ═══════════════════════════════════════════════════════
+// SUPABASE CLIENT — DIRECT (NO NETLIFY)
+// ═══════════════════════════════════════════════════════
+const { createClient } = supabase;
+const db = createClient(
+  'https://bejygkgfpeuhphrrelmy.supabase.co',
+  'eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9.eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlanlna2dmcGV1aHBocnJlbG15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzIwNTgsImV4cCI6MjA5NjIwODA1OH0.S8zDfyUu3tcmFeqZXkzj-nPkdW14zm-mLyYr3iBGvcM'
+);
 
-// Proteksi Halaman Admin: Cek token sesi dari localStorage
-function checkAuth() {
-  const adminToken = localStorage.getItem('admin_session');
-  
-  // Jika token acak aman belum ada, lempar ke login.html
-  if (!adminToken) {
+// ═══════════════════════════════════════════════════════
+// AUTH — CEK SESI SUPABASE
+// ═══════════════════════════════════════════════════════
+async function checkAuth() {
+  const { data: { session } } = await db.auth.getSession();
+  if (!session) {
     window.location.href = 'login.html';
   } else {
     initApp();
   }
 }
 
-// Jalankan sistem keamanan otomatis
-checkAuth();
-
-// Fungsi Keluar Panel (Logout)
-function handleLogout() {
-  localStorage.removeItem('admin_session');
+async function handleLogout() {
+  await db.auth.signOut();
   window.location.href = 'login.html';
 }
 
-// Helper pengirim data aman ke Netlify Backend Function
-async function kirimRequest(payload) {
-  const adminToken = localStorage.getItem('admin_session');
-  
-  const response = await fetch(API_URL, {
-    method: 'POST',
-    headers: {
-      'Content-Type': 'application/json',
-      'X-Admin-Password': adminToken // Mengirim session token resmi untuk divalidasi backend
-    },
-    body: JSON.stringify(payload)
-  });
+// Jalankan pengecekan sesi saat halaman dimuat
+checkAuth();
 
-  const hasil = await response.json();
-  if (!response.ok) {
-    throw new Error(hasil.error || 'Terjadi kesalahan sistem backend.');
-  }
-  return hasil;
-}
-
-// ═══════════════════════════════════════════
-// APP INIT & STATUS CONNECTION
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// APP INIT & CEK STATUS DB
+// ═══════════════════════════════════════════════════════
 async function initApp() {
   await checkDb();
   loadDashboard();
@@ -873,19 +847,20 @@ async function initApp() {
 async function checkDb() {
   const el = document.getElementById('db-status');
   try {
-    await kirimRequest({ aksi: 'baca', tabel: 'jadwal', limit: 1 });
-    el.textContent = '✅ Terhubung via API';
-    el.style.color = '#68d391';
+    const { error } = await db.from('jadwal').select('id', { count: 'exact', head: true });
+    if (error) throw error;
+    el.textContent  = '✅ Terhubung';
+    el.style.color  = '#68d391';
   } catch (err) {
-    console.warn("Database Connection Status Detail:", err.message);
+    console.warn('DB connection error:', err.message);
     el.textContent = '❌ Gagal';
     el.style.color = 'var(--danger)';
   }
 }
 
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 // NAVIGATION
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
 const PAGE_TITLES = {
   dashboard: 'DASHBOARD', jadwal: 'JADWAL & PELUANG',
   hasil: 'PREDIKSI SKOR AKURAT', marquee: 'RUNNING TEXT', banner: 'BANNER SLIDER'
@@ -901,7 +876,7 @@ function showPage(id) {
   });
   closeSidebar();
 }
-function openSidebar() {
+function openSidebar()  {
   document.getElementById('sidebar').classList.add('open');
   document.getElementById('overlay').classList.add('show');
 }
@@ -910,9 +885,9 @@ function closeSidebar() {
   document.getElementById('overlay').classList.remove('show');
 }
 
-// ═══════════════════════════════════════════
-// TOAST SYSTEM
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// TOAST
+// ═══════════════════════════════════════════════════════
 function toast(msg, type = 'success') {
   const icons = { success: '✅', error: '❌', info: 'ℹ️' };
   const el = document.createElement('div');
@@ -920,22 +895,20 @@ function toast(msg, type = 'success') {
   el.innerHTML = `<span>${icons[type] || '•'}</span><span>${msg}</span>`;
   document.getElementById('toast-container').appendChild(el);
   setTimeout(() => {
-    el.style.opacity = '0';
+    el.style.opacity    = '0';
     el.style.transition = 'opacity 0.3s';
     setTimeout(() => el.remove(), 300);
   }, 3500);
 }
 
-// ═══════════════════════════════════════════
-// UTILITY: LEAGUE SELECTOR & BADGES
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// UTILITY
+// ═══════════════════════════════════════════════════════
 function handleLeagueChange(prefix) {
-  const sel = document.getElementById(prefix + '-league');
+  const sel  = document.getElementById(prefix + '-league');
   const wrap = document.getElementById(prefix + '-custom-wrap');
   wrap.style.display = sel.value === 'CUSTOM' ? 'block' : 'none';
-  if (sel.value === 'CUSTOM') {
-    document.getElementById(prefix + '-custom-league').focus();
-  }
+  if (sel.value === 'CUSTOM') document.getElementById(prefix + '-custom-league').focus();
 }
 
 function getLeagueValue(prefix) {
@@ -966,36 +939,46 @@ function leagueBadge(league) {
   return `<span class="badge ${cls}">${league || '—'}</span>`;
 }
 
-// ═══════════════════════════════════════════
-// DASHBOARD LOGIC
-// ═══════════════════════════════════════════
+function setBtnLoading(btn, isLoading, label) {
+  btn.disabled   = isLoading;
+  btn.innerHTML  = isLoading ? '<div class="loader"></div> ' + label : label;
+}
+
+// ═══════════════════════════════════════════════════════
+// DASHBOARD
+// ═══════════════════════════════════════════════════════
 async function loadDashboard() {
   try {
-    const [j, h, m, b, recent] = await Promise.all([
-      kirimRequest({ aksi: 'hitung', tabel: 'jadwal' }),
-      kirimRequest({ aksi: 'hitung', tabel: 'hasil' }),
-      kirimRequest({ aksi: 'hitung', tabel: 'marquee' }),
-      kirimRequest({ aksi: 'hitung', tabel: 'banner', filterAktif: true }),
-      kirimRequest({ aksi: 'baca', tabel: 'jadwal', limit: 6 })
+    const [
+      { count: cJadwal  },
+      { count: cHasil   },
+      { count: cMarquee },
+      { count: cBanner  },
+      { data:  recent   }
+    ] = await Promise.all([
+      db.from('jadwal').select('*', { count: 'exact', head: true }),
+      db.from('hasil').select('*', { count: 'exact', head: true }),
+      db.from('marquee').select('*', { count: 'exact', head: true }),
+      db.from('banner').select('*', { count: 'exact', head: true }).eq('is_active', true),
+      db.from('jadwal').select('*').order('id', { ascending: false }).limit(6)
     ]);
 
-    document.getElementById('stat-jadwal').textContent  = j.count ?? '—';
-    document.getElementById('stat-hasil').textContent   = h.count ?? '—';
-    document.getElementById('stat-marquee').textContent = m.count ?? '—';
-    document.getElementById('stat-banner').textContent  = b.count ?? '—';
+    document.getElementById('stat-jadwal').textContent  = cJadwal  ?? '—';
+    document.getElementById('stat-hasil').textContent   = cHasil   ?? '—';
+    document.getElementById('stat-marquee').textContent = cMarquee ?? '—';
+    document.getElementById('stat-banner').textContent  = cBanner  ?? '—';
 
     const ra = document.getElementById('recent-activity');
-    if (!recent.data?.length) {
+    if (!recent?.length) {
       ra.innerHTML = '<div class="empty-state"><div class="ei">📭</div><div>Belum ada jadwal</div></div>';
       return;
     }
-    
     ra.innerHTML = `<div class="table-wrap"><table>
       <thead><tr><th>Waktu</th><th>Liga</th><th>Tim Rumah</th><th>Tim Tamu</th><th>Peluang</th></tr></thead>
-      <tbody>${recent.data.map(r => {
+      <tbody>${recent.map(r => {
         const parts = (r.match_name || '').split(' vs ');
-        const home = parts[0]?.trim() || r.match_name || '—';
-        const away = parts[1]?.trim() || '—';
+        const home  = parts[0]?.trim() || r.match_name || '—';
+        const away  = parts[1]?.trim() || '—';
         return `<tr>
           <td style="white-space:nowrap;color:var(--gold);font-weight:700;">${r.time || '—'} WIB</td>
           <td>${leagueBadge(r.league)}</td>
@@ -1005,25 +988,26 @@ async function loadDashboard() {
         </tr>`;
       }).join('')}</tbody></table></div>`;
   } catch (e) {
-    console.error('Dashboard error:', e);
+    console.error('Dashboard error:', e.message);
   }
 }
 
-// ═══════════════════════════════════════════
-// JADWAL LOGIC
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// JADWAL
+// ═══════════════════════════════════════════════════════
 async function loadJadwal() {
   const body = document.getElementById('jadwal-body');
   try {
-    const respon = await kirimRequest({ aksi: 'baca', tabel: 'jadwal' });
-    if (!respon.data?.length) {
+    const { data, error } = await db.from('jadwal').select('*').order('id', { ascending: false });
+    if (error) throw error;
+    if (!data.length) {
       body.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="ei">📭</div><div>Belum ada jadwal</div></div></td></tr>';
       return;
     }
-    body.innerHTML = respon.data.map(r => {
+    body.innerHTML = data.map(r => {
       const parts = (r.match_name || '').split(' vs ');
-      const home = parts[0]?.trim() || '—';
-      const away = parts[1]?.trim() || '—';
+      const home  = parts[0]?.trim() || '—';
+      const away  = parts[1]?.trim() || '—';
       return `<tr>
         <td style="white-space:nowrap;font-weight:700;color:var(--gold);">${r.time || '—'} WIB</td>
         <td>${leagueBadge(r.league)}</td>
@@ -1055,13 +1039,9 @@ async function addJadwal() {
 
   const btn = document.getElementById('btn-add-jadwal');
   setBtnLoading(btn, true, 'Menyimpan...');
-
   try {
-    await kirimRequest({
-      aksi: 'tambah',
-      tabel: 'jadwal',
-      data: { time, league, match_name, prob, home_logo, away_logo }
-    });
+    const { error } = await db.from('jadwal').insert([{ time, league, match_name, prob, home_logo, away_logo }]);
+    if (error) throw error;
     toast('Jadwal berhasil disimpan!');
     resetJadwalForm();
     loadJadwal();
@@ -1082,18 +1062,19 @@ function resetJadwalForm() {
   document.getElementById('j-custom-wrap').style.display = 'none';
 }
 
-// ═══════════════════════════════════════════
-// PREDIKSI HASIL LOGIC
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// HASIL / PREDIKSI
+// ═══════════════════════════════════════════════════════
 async function loadHasil() {
   const body = document.getElementById('hasil-body');
   try {
-    const respon = await kirimRequest({ aksi: 'baca', tabel: 'hasil' });
-    if (!respon.data?.length) {
+    const { data, error } = await db.from('hasil').select('*').order('id', { ascending: false });
+    if (error) throw error;
+    if (!data.length) {
       body.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="ei">⚽</div><div>Belum ada hasil</div></div></td></tr>';
       return;
     }
-    body.innerHTML = respon.data.map(r => `
+    body.innerHTML = data.map(r => `
       <tr>
         <td>${leagueBadge(r.league)}</td>
         <td>${renderLogoCell(r.home_logo, r.home || '—')}</td>
@@ -1125,13 +1106,9 @@ async function addHasil() {
 
   const btn = document.getElementById('btn-add-hasil');
   setBtnLoading(btn, true, 'Menyimpan...');
-
   try {
-    await kirimRequest({
-      aksi: 'tambah',
-      tabel: 'hasil',
-      data: { league, home, away, score, match_time, home_logo, away_logo }
-    });
+    const { error } = await db.from('hasil').insert([{ league, home, away, score, match_time, home_logo, away_logo }]);
+    if (error) throw error;
     toast('Hasil berhasil disimpan!');
     resetHasilForm();
     loadHasil();
@@ -1143,9 +1120,6 @@ async function addHasil() {
   }
 }
 
-// ═══════════════════════════════════════════
-// MARQUEE LOGIC
-// ═══════════════════════════════════════════
 function resetHasilForm() {
   ['h-home','h-away','h-score','h-custom-league','h-home-logo','h-away-logo','h-time'].forEach(id => {
     const el = document.getElementById(id);
@@ -1155,15 +1129,19 @@ function resetHasilForm() {
   document.getElementById('h-custom-wrap').style.display = 'none';
 }
 
+// ═══════════════════════════════════════════════════════
+// MARQUEE
+// ═══════════════════════════════════════════════════════
 async function loadMarquee() {
   const body = document.getElementById('marquee-body');
   try {
-    const respon = await kirimRequest({ aksi: 'baca', tabel: 'marquee' });
-    if (!respon.data?.length) {
+    const { data, error } = await db.from('marquee').select('*').order('id', { ascending: false });
+    if (error) throw error;
+    if (!data.length) {
       body.innerHTML = '<tr><td colspan="3"><div class="empty-state"><div class="ei">📢</div><div>Belum ada teks</div></div></td></tr>';
       return;
     }
-    body.innerHTML = respon.data.map(r => `
+    body.innerHTML = data.map(r => `
       <tr>
         <td style="max-width:350px;word-break:break-word;font-size:13px;">${r.text}</td>
         <td>
@@ -1192,13 +1170,9 @@ async function addMarquee() {
 
   const btn = document.getElementById('btn-add-marquee');
   setBtnLoading(btn, true, 'Menyimpan...');
-
   try {
-    await kirimRequest({
-      aksi: 'tambah',
-      tabel: 'marquee',
-      data: { text, is_active }
-    });
+    const { error } = await db.from('marquee').insert([{ text, is_active }]);
+    if (error) throw error;
     toast('Running text berhasil disimpan!');
     document.getElementById('m-text').value = '';
     loadMarquee();
@@ -1210,22 +1184,23 @@ async function addMarquee() {
   }
 }
 
-// ═══════════════════════════════════════════
-// BANNER LOGIC
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// BANNER
+// ═══════════════════════════════════════════════════════
 async function loadBanner() {
   const body = document.getElementById('banner-body');
   try {
-    const respon = await kirimRequest({ aksi: 'baca', tabel: 'banner', sortUrutan: true });
-    if (!respon.data?.length) {
+    const { data, error } = await db.from('banner').select('*').order('sort_order', { ascending: true });
+    if (error) throw error;
+    if (!data.length) {
       body.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="ei">🖼️</div><div>Belum ada banner</div></div></td></tr>';
       return;
     }
-    body.innerHTML = respon.data.map(r => `
+    body.innerHTML = data.map(r => `
       <tr>
         <td>
-          <img src="${r.image_url}" 
-               style="width:90px;height:50px;object-fit:cover;border-radius:6px;border:1px solid var(--gold-border);" 
+          <img src="${r.image_url}"
+               style="width:90px;height:50px;object-fit:cover;border-radius:6px;border:1px solid var(--gold-border);"
                onerror="this.replaceWith(document.createTextNode('⚠️ Error'))" alt="Banner">
         </td>
         <td style="max-width:160px;word-break:break-word;font-size:13px;">${r.alt_text || '—'}</td>
@@ -1252,7 +1227,7 @@ async function loadBanner() {
 function previewBanner() {
   const url = document.getElementById('b-url').value.trim();
   if (!url) return toast('Masukkan URL gambar dulu!', 'error');
-  document.getElementById('b-preview').src = url;
+  document.getElementById('b-preview').src     = url;
   document.getElementById('b-preview-wrap').style.display = 'block';
 }
 
@@ -1266,13 +1241,9 @@ async function addBanner() {
 
   const btn = document.getElementById('btn-add-banner');
   setBtnLoading(btn, true, 'Menyimpan...');
-
   try {
-    await kirimRequest({
-      aksi: 'tambah',
-      tabel: 'banner',
-      data: { image_url, alt_text, sort_order, is_active }
-    });
+    const { error } = await db.from('banner').insert([{ image_url, alt_text, sort_order, is_active }]);
+    if (error) throw error;
     toast('Banner berhasil disimpan!');
     ['b-url','b-alt','b-order'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('b-preview-wrap').style.display = 'none';
@@ -1285,13 +1256,14 @@ async function addBanner() {
   }
 }
 
-// ═══════════════════════════════════════════
-// SHARED ACTION CRUD REFACTOR
-// ═══════════════════════════════════════════
+// ═══════════════════════════════════════════════════════
+// SHARED CRUD
+// ═══════════════════════════════════════════════════════
 async function deleteRow(table, id, reloadFn) {
   if (!confirm('Yakin ingin menghapus data ini?')) return;
   try {
-    await kirimRequest({ aksi: 'hapus', tabel: table, id: id });
+    const { error } = await db.from(table).delete().eq('id', id);
+    if (error) throw error;
     toast('Data berhasil dihapus.');
     reloadFn();
     loadDashboard();
@@ -1302,29 +1274,16 @@ async function deleteRow(table, id, reloadFn) {
 
 async function toggleField(table, id, field, currentVal, reloadFn) {
   try {
-    const dataUpdate = {};
-    dataUpdate[field] = !currentVal;
-    
-    await kirimRequest({
-      aksi: 'edit',
-      tabel: table,
-      id: id,
-      data: dataUpdate
-    });
-    
+    const updateData    = {};
+    updateData[field]   = !currentVal;
+    const { error }     = await db.from(table).update(updateData).eq('id', id);
+    if (error) throw error;
     toast('Status diperbarui.');
     reloadFn();
     loadDashboard();
   } catch (e) {
     toast('Gagal update: ' + e.message, 'error');
   }
-}
-
-function setBtnLoading(btn, isLoading, label) {
-  btn.disabled = isLoading;
-  btn.innerHTML = isLoading
-    ? '<div class="loader"></div> ' + label
-    : label;
 }
 </script>
 </body>
