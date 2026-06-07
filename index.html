@@ -6,7 +6,6 @@
     <title>RINJANI4D — Analisa & Prediksi Bola</title>
     <link href="https://images.linkcdn.cloud/V2/507/favicon/favicon-1888287302.png" rel="icon" type="image/png"/>
     <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;600&display=swap" rel="stylesheet">
-    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -357,7 +356,7 @@
     </div>
 </header>
 
-<!-- RUNNING TEXT (dinamis dari Supabase) -->
+<!-- RUNNING TEXT -->
 <div class="marquee-container">
     <div class="marquee-content">
         <marquee scrollamount="5" id="marqueeText">
@@ -366,10 +365,9 @@
     </div>
 </div>
 
-<!-- BANNER SLIDER (dinamis dari Supabase) -->
+<!-- BANNER SLIDER -->
 <section class="banner-slider">
     <div class="slider-wrapper" id="slider">
-        <!-- Diisi oleh JavaScript -->
         <div class="slide"><img src="https://i.imgur.com/VDY1cAE.png" alt="Banner"></div>
     </div>
     <button class="prev-btn" id="prevBtn">&#10094;</button>
@@ -404,7 +402,7 @@
     </div>
 
     <!-- 3D Carousel -->
-   <div class="page">
+    <div class="page">
         <div class="scene">    
             <div class="a3d" style="--n: 12">      
                 <img class="carousel-img" style="--i: 0"  src="https://i.imgur.com/Uceed81.png" alt="Slide 1">      
@@ -419,15 +417,14 @@
                 <img class="carousel-img" style="--i: 9"  src="https://i.imgur.com/oNwcHez.png" alt="Slide 10">      
                 <img class="carousel-img" style="--i: 10" src="https://i.imgur.com/d8dSp1P.png" alt="Slide 11">      
                 <img class="carousel-img" style="--i: 11" src="https://i.imgur.com/Mg7WTwT.png" alt="Slide 12">
-               <img class="carousel-img" style="--i: 12"
-src="https://i.imgur.com/yYVcOJb.png" alt="Slide 13">
-               <img class="carousel-img" style="--i: 13"
-src="https://i.imgur.com/DBahwmx.png" alt="Slide 14">
+                <img class="carousel-img" style="--i: 12" src="https://i.imgur.com/yYVcOJb.png" alt="Slide 13">
+                <img class="carousel-img" style="--i: 13" src="https://i.imgur.com/DBahwmx.png" alt="Slide 14">
             </div>  
         </div>
     </div>
 </section>
-    <!-- ═══ KODE BARU: JUDUL PREDIKSI SKOR ═══ -->
+
+<!-- JUDUL PREDIKSI SKOR -->
 <div class="section-title-wrap" style="text-align: center; margin-top: 50px; margin-bottom: -10px;">
   <h2 style="font-family: 'Barlow Condensed', sans-serif; font-size: 28px; font-weight: 800; color: #ffd700; text-transform: uppercase; letter-spacing: 1px; margin: 0; text-shadow: 1px 1px 3px rgba(0,0,0,0.8);">
     ⚽ HASIL PREDIKSI SKOR AKURAT ⚽
@@ -446,7 +443,7 @@ src="https://i.imgur.com/DBahwmx.png" alt="Slide 14">
 
 <script>
 // ═══════════════════════════════════════════════════════
-// SUPABASE CONFIG (PASANGAN VALDAS & FIXED)
+// GLOBAL APP MASTER DATA (FETCHED VIA NETLIFY FUNCTION)
 // ═══════════════════════════════════════════════════════
 
 let allSchedules = [];
@@ -462,82 +459,87 @@ burger.addEventListener('click', e => {
 });
 document.addEventListener('click', () => dropdownCard.classList.remove('active'));
 
-// LOAD MARQUEE
-async function loadMarquee() {
+// LOAD ALL DATA VIA ONE SINGLE SECURE BRIDGE
+async function loadAllWebsiteData() {
     try {
-        const { data, error } = await db.from('marquee').select('text').eq('is_active', true).order('created_at', { ascending: false });
-        if (error) throw error;
-        if (data && data.length > 0) {
-            document.getElementById('marqueeText').textContent = data.map(r => r.text).join('   ●   ');
+        // Panggil jembatan Netlify Functions rahasia yang aman 100%
+        const response = await fetch('/.netlify/functions/ambil-jadwal');
+        const masterData = await response.json();
+
+        // 1. Ekstrak data Marquee
+        const marqueeData = masterData.marquee || [];
+        if (marqueeData.length > 0) {
+            document.getElementById('marqueeText').textContent = marqueeData.map(r => r.text).join('   ●   ');
         } else {
             document.getElementById('marqueeText').textContent = "📢 RINJANI4D: Prediksi Terakurat Hari Ini!";
         }
+
+        // 2. Ekstrak data Banner Slider
+        const bannerData = masterData.banner || [];
+        renderBannerSlider(bannerData);
+
+        // 3. Ekstrak data Jadwal Pertandingan
+        allSchedules = masterData.jadwal || [];
+        buildLeagueTabs();
+        renderTable(allSchedules);
+
+        // 4. Ekstrak data Hasil / Prediksi Skor Akurat
+        const hasilData = masterData.hasil || [];
+        renderCards(hasilData);
+
     } catch (e) {
+        console.error("Master Bridge Error:", e.message);
         document.getElementById('marqueeText').textContent = "📢 RINJANI4D: Prediksi Terakurat Hari Ini!";
+        document.getElementById('scheduleBody').innerHTML = `<tr><td colspan="4" style="text-align:center;color:#fc8181;padding:20px;">Gagal memuat jadwal.</td></tr>`;
+        document.getElementById('matches').innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#fc8181;padding:30px;">Gagal memuat hasil prediksi.</div>`;
     }
 }
 
-// ═══════════════════════════════════════════════════════
-// NEW INFINITE BANNER SLIDER (SMOOTH LOOP)
-// ═══════════════════════════════════════════════════════
-let isTransitioning = false;
+// RENDER BANNER SLIDER LOGIC
+function renderBannerSlider(data) {
+    if (!data || data.length === 0) return;
+    
+    const sw = document.getElementById('slider');
+    const dc = document.getElementById('dotsContainer');
+    sw.innerHTML = ''; dc.innerHTML = '';
+    
+    sliderSlides = data;
+    sliderIdx = 1;
 
-async function loadBanner() {
-    try {
-        const { data, error } = await db.from('banner').select('*').eq('is_active', true).order('sort_order', { ascending: true });
-        if (error) throw error;
-        if (!data || data.length === 0) return;
-        
-        const sw = document.getElementById('slider');
-        const dc = document.getElementById('dotsContainer');
-        sw.innerHTML = ''; dc.innerHTML = '';
-        
-        sliderSlides = data;
-        sliderIdx = 1; // Mulai dari index 1 (karena index 0 berisi klon gambar terakhir)
+    data.forEach((_, i) => {
+        const dot = document.createElement('div'); 
+        dot.className = 'dot' + (i === 0 ? ' active' : '');
+        dot.addEventListener('click', () => goToSlide(i + 1)); 
+        dc.appendChild(dot);
+    });
 
-        // 1. Buat Indikator Dots asli
-        data.forEach((_, i) => {
-            const dot = document.createElement('div'); 
-            dot.className = 'dot' + (i === 0 ? ' active' : '');
-            dot.addEventListener('click', () => goToSlide(i + 1)); 
-            dc.appendChild(dot);
-        });
+    const lastClone = document.createElement('div'); lastClone.className = 'slide';
+    const imgLast = document.createElement('img'); imgLast.src = data[data.length - 1].image_url;
+    lastClone.appendChild(imgLast); sw.appendChild(lastClone);
 
-        // 2. Tambahkan Klon Gambar Terakhir di paling depan
-        const lastClone = document.createElement('div'); lastClone.className = 'slide';
-        const imgLast = document.createElement('img'); imgLast.src = data[data.length - 1].image_url;
-        lastClone.appendChild(imgLast); sw.appendChild(lastClone);
+    data.forEach((banner) => {
+        const slide = document.createElement('div'); slide.className = 'slide';
+        const img = document.createElement('img'); img.src = banner.image_url; img.alt = banner.alt_text || 'Banner';
+        slide.appendChild(img); sw.appendChild(slide);
+    });
 
-        // 3. Tambahkan Semua Gambar Asli dari Supabase
-        data.forEach((banner) => {
-            const slide = document.createElement('div'); slide.className = 'slide';
-            const img = document.createElement('img'); img.src = banner.image_url; img.alt = banner.alt_text || 'Banner';
-            slide.appendChild(img); sw.appendChild(slide);
-        });
+    const firstClone = document.createElement('div'); firstClone.className = 'slide';
+    const imgFirst = document.createElement('img'); imgFirst.src = data[0].image_url;
+    firstClone.appendChild(imgFirst); sw.appendChild(firstClone);
 
-        // 4. Tambahkan Klon Gambar Pertama di paling belakang
-        const firstClone = document.createElement('div'); firstClone.className = 'slide';
-        const imgFirst = document.createElement('img'); imgFirst.src = data[0].image_url;
-        firstClone.appendChild(imgFirst); sw.appendChild(firstClone);
-
-        // Set posisi awal container ke gambar asli pertama tanpa animasi
-        sw.style.transition = 'none';
-        sw.style.transform = `translateX(-${sliderIdx * 100}%)`;
-
-    } catch (e) { console.warn('Banner load error:', e.message); }
+    sw.style.transition = 'none';
+    sw.style.transform = `translateX(-${sliderIdx * 100}%)`;
 }
 
+let isTransitioning = false;
 function moveSliderSmooth(targetIdx) {
     if (isTransitioning || !sliderSlides.length) return;
     isTransitioning = true;
     
     const sw = document.getElementById('slider');
     sliderIdx = targetIdx;
-
-    // Jalankan efek geser mulus
     sw.style.transition = 'transform 0.5s ease-in-out';
     sw.style.transform = `translateX(-${sliderIdx * 100}%)`;
-
     updateDots();
 }
 
@@ -555,19 +557,14 @@ function updateDots() {
     });
 }
 
-// Efek sulap: Melompat instan tanpa animasi saat transisi klon selesai
 document.getElementById('slider').addEventListener('transitionend', () => {
     const sw = document.getElementById('slider');
     isTransitioning = false;
-
-    // Jika mentok di klon paling akhir, balikkan instan ke gambar asli pertama
     if (sliderIdx === sliderSlides.length + 1) {
         sw.style.transition = 'none';
         sliderIdx = 1;
         sw.style.transform = `translateX(-${sliderIdx * 100}%)`;
     }
-    
-    // Jika mentok di klon paling awal, balikkan instan ke gambar asli terakhir
     if (sliderIdx === 0) {
         sw.style.transition = 'none';
         sliderIdx = sliderSlides.length;
@@ -578,32 +575,10 @@ document.getElementById('slider').addEventListener('transitionend', () => {
 function initSliderControls() {
     document.getElementById('nextBtn').onclick = () => moveSliderSmooth(sliderIdx + 1);
     document.getElementById('prevBtn').onclick = () => moveSliderSmooth(sliderIdx - 1);
-    
-    // Geser otomatis setiap 3.5 detik ke arah kanan secara berkesinambungan
-    setInterval(() => {
-        moveSliderSmooth(sliderIdx + 1);
-    }, 3500);
+    setInterval(() => { moveSliderSmooth(sliderIdx + 1); }, 3500);
 }
 
-// LOAD JADWAL
-async function loadJadwal() {
-    try {
-        // Memanggil jembatan rahasia Netlify Functions yang aman tanpa bocor kunci
-        const response = await fetch('/.netlify/functions/ambil-jadwal');
-        const data = await response.json();
-        
-        // Memasukkan hasil data dari Netlify ke dalam variabel jadwalmu
-        allSchedules = data || [];
-        
-        // Menjalankan fungsi filter liga dan cetak tabel bawaan kodemu
-        buildLeagueTabs();
-        renderTable(allSchedules);
-    } catch (e) {
-        console.error("Error:", e.message);
-        document.getElementById('scheduleBody').innerHTML = `<tr><td colspan="4" style="text-align:center;color:#fc8181;padding:20px;">Gagal memuat jadwal.</td></tr>`;
-    }
-}
-
+// JADWAL FILTER & TABLE MAKER
 function buildLeagueTabs() {
     const leagues = ['ALL', ...new Set(allSchedules.map(s => s.league).filter(Boolean))];
     document.getElementById('tabFilter').innerHTML = leagues.map(l => `<button class="tab-btn${l === 'ALL' ? ' active' : ''}" onclick="filterLeague('${l}')">${l === 'ALL' ? 'SEMUA' : l}</button>`).join('');
@@ -618,7 +593,6 @@ function renderTable(data) {
     const body = document.getElementById('scheduleBody');
     if (!data.length) { body.innerHTML = `<tr><td colspan="4"><div class="state-msg">Tidak ada jadwal tersedia</div></td></tr>`; return; }
     body.innerHTML = data.map(s => {
-        // PERBAIKAN: Menggunakan Regex (/ vs /i) supaya fleksibel memecah 'vs', 'VS', atau 'Vs'
         const parts = (s.match_name || '').split(/ vs /i);
         const home = parts[0]?.trim() || s.match_name || '—';
         const away = parts[1]?.trim() || '';
@@ -634,17 +608,8 @@ function renderTable(data) {
         </tr>`;
     }).join('');
 }
-// LOAD HASIL
-async function loadHasil() {
-    try {
-        const { data, error } = await db.from('hasil').select('*').order('created_at', { ascending: false });
-        if (error) throw error;
-        renderCards(data || []);
-    } catch (e) {
-        document.getElementById('matches').innerHTML = `<div style="grid-column:1/-1;text-align:center;color:#fc8181;padding:30px;">Gagal memuat hasil.</div>`;
-    }
-}
 
+// RENDER HASIL PREDIKSI KARTU
 function renderCards(data) {
     const container = document.getElementById('matches');
     if (!data.length) { container.innerHTML = `<div style="grid-column:1/-1;"><div class="state-msg">Belum ada PREDIKSI SKOR AKURAT</div></div>`; return; }
@@ -653,11 +618,9 @@ function renderCards(data) {
         const awayLogo = m.away_logo ? `<img src="${m.away_logo}" onerror="this.replaceWith(createPlaceholder())">` : `<div class="team-logo-placeholder">⚽</div>`;
         const predText = `Prediksi ${m.home} vs ${m.away}: Skor ${m.score} — Analisa by RINJANI4D`;
         
-        // Mengambil data waktu (mendukung nama kolom 'match_time' ataupun 'waktu')
         const waktuPertandingan = m.match_time || m.waktu || '';
 
         return `<div class="card">
-            <!-- Tampilan Tanggal & Waktu di Atas Logo Tim -->
             ${waktuPertandingan ? `
             <div class="match-time-display" style="color: #ffd700; font-size: 12px; font-weight: 700; margin-bottom: 15px; letter-spacing: 0.5px; opacity: 0.9;">
                  ${waktuPertandingan}
@@ -683,30 +646,15 @@ function copyMatch(text) {
     });
 }
 
+// INITIALIZATION
 async function init() {
-    await loadMarquee(); await loadBanner(); await loadJadwal(); await loadHasil(); initSliderControls();
+    await loadAllWebsiteData(); 
+    initSliderControls();
+    
+    // Polling berkala setiap 60 detik sebagai pengganti aman realtime listener
+    setInterval(loadAllWebsiteData, 60000);
 }
 document.addEventListener('DOMContentLoaded', init);
-
-// ═══════════════════════════════════════════════════════
-// KODE BARU: SUPABASE REALTIME CHANNEL LISTENER
-// ═══════════════════════════════════════════════════════
-
-// 1. Dengarkan perubahan data pada tabel 'jadwal'
-db.channel('realtime-jadwal')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'jadwal' }, (payload) => {
-      console.log('Ada pembaruan jadwal pertandingan:', payload);
-      loadJadwal(); // Memuat ulang tabel jadwal otomatis di layar depan
-  })
-  .subscribe();
-
-// 2. Dengarkan perubahan data pada tabel 'hasil'
-db.channel('realtime-hasil')
-  .on('postgres_changes', { event: '*', schema: 'public', table: 'hasil' }, (payload) => {
-      console.log('Ada pembaruan PREDIKSI SKOR AKURAT:', payload);
-      loadHasil(); // Memuat ulang kartu hasil otomatis di layar depan
-  })
-  .subscribe();
 </script>
 </body>
 </html>
