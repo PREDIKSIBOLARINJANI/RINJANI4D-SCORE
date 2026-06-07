@@ -895,47 +895,54 @@
 
 <script>
 // ═══════════════════════════════════════════
-// CONFIG & INIT
+// CONFIG & AUTH SYSTEM (NETLIFY FUNCTION)
 // ═══════════════════════════════════════════
-const SUPABASE_URL = "https://" + "bejygkgfpeuhphrrelmy.supabase.co";
+const API_URL = '/api/simpan-data';
 
-const SUPABASE_ANON_KEY = "eyJhbGciOiJIUzI1NiIsInR5cCI6IkpXVCJ9." + 
-"eyJpc3MiOiJzdXBhYmFzZSIsInJlZiI6ImJlanlna2dmcGV1aHBocnJlbG15Iiwicm9sZSI6ImFub24iLCJpYXQiOjE3ODA2MzIwNTgsImV4cCI6MjA5NjIwODA1OH0." + 
-"S8zDfyUu3tcmFeqZXkzj-nPkdW14zm-mLyYr3iBGvcM";
-
-const db = supabase.createClient(SUPABASE_URL, SUPABASE_ANON_KEY);
-// ═══════════════════════════════════════════
-// SUPABASE AUTH PROTEKSI & LOGOUT
-// ═══════════════════════════════════════════
-
-// 1. Cek secara otomatis apakah user sudah login atau belum saat halaman admin dibuka
-async function checkAuth() {
-  const { data: { session }, error } = await db.auth.getSession();
+// Proteksi Halaman Admin: Cek password dari localStorage
+function checkAuth() {
+  const adminPass = localStorage.getItem('admin_session');
   
-  // Jika tidak ada session (belum login), langsung tendang balik ke login.html
-  if (!session || error) {
+  // Jika token password belum tersimpan, tendang langsung ke login.html
+  if (!adminPass) {
     window.location.href = 'login.html';
   } else {
-    // Jika aman dan terverifikasi login, jalankan aplikasi admin
+    // Jika ada session, jalankan aplikasi admin
     initApp();
   }
 }
 
-// Jalankan fungsi cek keamanan di atas secara langsung
+// Jalankan proteksi keamanan secara langsung
 checkAuth();
 
-// 2. Fungsi Tombol Keluar (Logout) Resmi Supabase
-async function handleLogout() {
-  const { error } = await db.auth.signOut();
-  if (error) {
-    toast('Gagal keluar: ' + error.message, 'error');
-  } else {
-    window.location.href = 'login.html'; // Pindah ke halaman login setelah sukses logout
+// Fungsi Keluar Panel (Logout)
+function handleLogout() {
+  localStorage.removeItem('admin_session');
+  window.location.href = 'login.html';
+}
+
+// Helper untuk mengirim request ke Netlify Function panggung belakang
+async function kirimRequest(payload) {
+  const adminPass = localStorage.getItem('admin_session');
+  
+  const response = await fetch(API_URL, {
+    method: 'POST',
+    headers: {
+      'Content-Type': 'application/json',
+      'X-Admin-Password': adminPass // Mengirim password untuk divalidasi di panggung belakang
+    },
+    body: JSON.stringify(payload)
+  });
+
+  const hasil = await response.json();
+  if (!response.ok) {
+    throw new Error(hasil.error || 'Terjadi kesalahan sistem backend.');
   }
+  return hasil;
 }
 
 // ═══════════════════════════════════════════
-// APP INIT
+// APP INIT & STATUS CONNECTION
 // ═══════════════════════════════════════════
 async function initApp() {
   await checkDb();
@@ -949,11 +956,9 @@ async function initApp() {
 async function checkDb() {
   const el = document.getElementById('db-status');
   try {
-    // Memeriksa kesiapan tabel 'jadwal'
-    const { error } = await db.from('jadwal').select('time').limit(1);
-    if (error && error.code !== 'PGRST116') throw error;
-    
-    el.textContent = '✅ Terhubung';
+    // Tes koneksi dengan membaca data jadwal (limit 1) lewat backend
+    await kirimRequest({ aksi: 'baca', tabel: 'jadwal', limit: 1 });
+    el.textContent = '✅ Terhubung via API';
     el.style.color = '#68d391';
   } catch (err) {
     console.warn("Database Connection Status Detail:", err.message);
@@ -990,7 +995,7 @@ function closeSidebar() {
 }
 
 // ═══════════════════════════════════════════
-// TOAST
+// TOAST SYSTEM
 // ═══════════════════════════════════════════
 function toast(msg, type = 'success') {
   const icons = { success: '✅', error: '❌', info: 'ℹ️' };
@@ -1006,7 +1011,7 @@ function toast(msg, type = 'success') {
 }
 
 // ═══════════════════════════════════════════
-// UTILITY: LEAGUE SELECTOR (CUSTOM INPUT)
+// UTILITY: LEAGUE SELECTOR & BADGES
 // ═══════════════════════════════════════════
 function handleLeagueChange(prefix) {
   const sel = document.getElementById(prefix + '-league');
@@ -1026,11 +1031,6 @@ function getLeagueValue(prefix) {
   return sel.value;
 }
 
-// ═══════════════════════════════════════════
-// UTILITY: LOGO UPLOAD → BASE64
-// ═══════════════════════════════════════════
-
-// Helper: render logo cell di tabel
 function renderLogoCell(logoSrc, name) {
   if (logoSrc) {
     return `<div class="team-cell">
@@ -1044,7 +1044,6 @@ function renderLogoCell(logoSrc, name) {
   </div>`;
 }
 
-// Helper: badge liga
 function leagueBadge(league) {
   const map = { 'EPL': 'badge-EPL', 'UCL': 'badge-UCL', 'LIGA 1': 'badge-LIGA1' };
   const cls = map[league] || 'badge-default';
@@ -1052,30 +1051,33 @@ function leagueBadge(league) {
 }
 
 // ═══════════════════════════════════════════
-// DASHBOARD
+// DASHBOARD LOGIC
 // ═══════════════════════════════════════════
 async function loadDashboard() {
   try {
-    const [j, h, m, b] = await Promise.all([
-      db.from('jadwal').select('*', { count: 'exact', head: true }),
-      db.from('hasil').select('*', { count: 'exact', head: true }),
-      db.from('marquee').select('*', { count: 'exact', head: true }),
-      db.from('banner').select('*', { count: 'exact', head: true }).eq('is_active', true)
+    // Ambil data dashboard secara paralel lewat API panggung belakang
+    const [j, h, m, b, recent] = await Promise.all([
+      kirimRequest({ aksi: 'hitung', tabel: 'jadwal' }),
+      kirimRequest({ aksi: 'hitung', tabel: 'hasil' }),
+      kirimRequest({ aksi: 'hitung', tabel: 'marquee' }),
+      kirimRequest({ aksi: 'hitung', tabel: 'banner', filterAktif: true }),
+      kirimRequest({ aksi: 'baca', tabel: 'jadwal', limit: 6 })
     ]);
+
     document.getElementById('stat-jadwal').textContent  = j.count ?? '—';
     document.getElementById('stat-hasil').textContent   = h.count ?? '—';
     document.getElementById('stat-marquee').textContent = m.count ?? '—';
     document.getElementById('stat-banner').textContent  = b.count ?? '—';
 
-    const { data } = await db.from('jadwal').select('*').order('created_at', { ascending: false }).limit(6);
     const ra = document.getElementById('recent-activity');
-    if (!data?.length) {
+    if (!recent.data?.length) {
       ra.innerHTML = '<div class="empty-state"><div class="ei">📭</div><div>Belum ada jadwal</div></div>';
       return;
     }
+    
     ra.innerHTML = `<div class="table-wrap"><table>
       <thead><tr><th>Waktu</th><th>Liga</th><th>Tim Rumah</th><th>Tim Tamu</th><th>Peluang</th></tr></thead>
-      <tbody>${data.map(r => {
+      <tbody>${recent.data.map(r => {
         const parts = (r.match_name || '').split(' vs ');
         const home = parts[0]?.trim() || r.match_name || '—';
         const away = parts[1]?.trim() || '—';
@@ -1093,18 +1095,17 @@ async function loadDashboard() {
 }
 
 // ═══════════════════════════════════════════
-// JADWAL
+// JADWAL LOGIC
 // ═══════════════════════════════════════════
 async function loadJadwal() {
   const body = document.getElementById('jadwal-body');
   try {
-    const { data, error } = await db.from('jadwal').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
-    if (!data?.length) {
+    const respon = await kirimRequest({ aksi: 'baca', tabel: 'jadwal' });
+    if (!respon.data?.length) {
       body.innerHTML = '<tr><td colspan="6"><div class="empty-state"><div class="ei">📭</div><div>Belum ada jadwal</div></div></td></tr>';
       return;
     }
-    body.innerHTML = data.map(r => {
+    body.innerHTML = respon.data.map(r => {
       const parts = (r.match_name || '').split(' vs ');
       const home = parts[0]?.trim() || '—';
       const away = parts[1]?.trim() || '—';
@@ -1115,7 +1116,7 @@ async function loadJadwal() {
         <td>${renderLogoCell(r.away_logo, away)}</td>
         <td style="font-size:12px;color:#ccc;">${r.prob || '—'}</td>
         <td><div class="td-actions">
-          <button class="btn btn-danger btn-xs" onclick="deleteRow('jadwal',${r.id},'jadwal-body',loadJadwal)">🗑 Hapus</button>
+          <button class="btn btn-danger btn-xs" onclick="deleteRow('jadwal',${r.id},loadJadwal)">🗑 Hapus</button>
         </div></td>
       </tr>`;
     }).join('');
@@ -1141,8 +1142,11 @@ async function addJadwal() {
   setBtnLoading(btn, true, 'Menyimpan...');
 
   try {
-    const { error } = await db.from('jadwal').insert([{ time, league, match_name, prob, home_logo, away_logo }]);
-    if (error) throw error;
+    await kirimRequest({
+      aksi: 'tambah',
+      tabel: 'jadwal',
+      data: { time, league, match_name, prob, home_logo, away_logo }
+    });
     toast('Jadwal berhasil disimpan!');
     resetJadwalForm();
     loadJadwal();
@@ -1164,25 +1168,24 @@ function resetJadwalForm() {
 }
 
 // ═══════════════════════════════════════════
-// HASIL
+// PREDIKSI HASIL LOGIC
 // ═══════════════════════════════════════════
 async function loadHasil() {
   const body = document.getElementById('hasil-body');
   try {
-    const { data, error } = await db.from('hasil').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
-    if (!data?.length) {
+    const respon = await kirimRequest({ aksi: 'baca', tabel: 'hasil' });
+    if (!respon.data?.length) {
       body.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="ei">⚽</div><div>Belum ada hasil</div></div></td></tr>';
       return;
     }
-    body.innerHTML = data.map(r => `
+    body.innerHTML = respon.data.map(r => `
       <tr>
         <td>${leagueBadge(r.league)}</td>
         <td>${renderLogoCell(r.home_logo, r.home || '—')}</td>
         <td style="font-family:'Barlow Condensed';font-size:22px;font-weight:800;color:var(--gold);text-align:center;white-space:nowrap;">${r.score || '—'}</td>
         <td>${renderLogoCell(r.away_logo, r.away || '—')}</td>
         <td><div class="td-actions">
-          <button class="btn btn-danger btn-xs" onclick="deleteRow('hasil',${r.id},'hasil-body',loadHasil)">🗑 Hapus</button>
+          <button class="btn btn-danger btn-xs" onclick="deleteRow('hasil',${r.id},loadHasil)">🗑 Hapus</button>
         </div></td>
       </tr>`).join('');
   } catch (e) {
@@ -1195,13 +1198,13 @@ async function addHasil() {
   const home      = document.getElementById('h-home').value.trim();
   const away      = document.getElementById('h-away').value.trim();
   const score     = document.getElementById('h-score').value.trim();
-  const match_time = document.getElementById('h-time').value.trim(); // -> MENANGKAP INPUT WAKTU BARU
+  const match_time = document.getElementById('h-time').value.trim();
   const home_logo = document.getElementById('h-home-b64').value || null;
   const away_logo = document.getElementById('h-away-b64').value || null;
 
   if (!league) return toast('Nama liga wajib diisi!', 'error');
   if (!score)  return toast('Skor wajib diisi!', 'error');
-  if (!match_time) return toast('Waktu & tanggal wajib diisi!', 'error'); // -> VALIDASI WAJIB DIISI
+  if (!match_time) return toast('Waktu & tanggal wajib diisi!', 'error');
   if (!home)   return toast('Nama tim tuan rumah wajib diisi!', 'error');
   if (!away)   return toast('Nama tim tamu wajib diisi!', 'error');
 
@@ -1209,9 +1212,11 @@ async function addHasil() {
   setBtnLoading(btn, true, 'Menyimpan...');
 
   try {
-    // SINKRONISASI KE SUPABASE: Pastikan di tabel 'hasil' database Supabase kamu sudah ada kolom bernama 'match_time' atau 'waktu'
-    const { error } = await db.from('hasil').insert([{ league, home, away, score, match_time, home_logo, away_logo }]);
-    if (error) throw error;
+    await kirimRequest({
+      aksi: 'tambah',
+      tabel: 'hasil',
+      data: { league, home, away, score, match_time, home_logo, away_logo }
+    });
     toast('Hasil berhasil disimpan!');
     resetHasilForm();
     loadHasil();
@@ -1234,18 +1239,17 @@ function resetHasilForm() {
 }
 
 // ═══════════════════════════════════════════
-// MARQUEE
+// MARQUEE LOGIC
 // ═══════════════════════════════════════════
 async function loadMarquee() {
   const body = document.getElementById('marquee-body');
   try {
-    const { data, error } = await db.from('marquee').select('*').order('created_at', { ascending: false });
-    if (error) throw error;
-    if (!data?.length) {
+    const respon = await kirimRequest({ aksi: 'baca', tabel: 'marquee' });
+    if (!respon.data?.length) {
       body.innerHTML = '<tr><td colspan="3"><div class="empty-state"><div class="ei">📢</div><div>Belum ada teks</div></div></td></tr>';
       return;
     }
-    body.innerHTML = data.map(r => `
+    body.innerHTML = respon.data.map(r => `
       <tr>
         <td style="max-width:350px;word-break:break-word;font-size:13px;">${r.text}</td>
         <td>
@@ -1258,7 +1262,7 @@ async function loadMarquee() {
             <button class="btn btn-ghost btn-xs" onclick="toggleField('marquee',${r.id},'is_active',${r.is_active},loadMarquee)">
               ${r.is_active ? 'Nonaktifkan' : 'Aktifkan'}
             </button>
-            <button class="btn btn-danger btn-xs" onclick="deleteRow('marquee',${r.id},'marquee-body',loadMarquee)">🗑</button>
+            <button class="btn btn-danger btn-xs" onclick="deleteRow('marquee',${r.id},loadMarquee)">🗑</button>
           </div>
         </td>
       </tr>`).join('');
@@ -1276,8 +1280,11 @@ async function addMarquee() {
   setBtnLoading(btn, true, 'Menyimpan...');
 
   try {
-    const { error } = await db.from('marquee').insert([{ text, is_active }]);
-    if (error) throw error;
+    await kirimRequest({
+      aksi: 'tambah',
+      tabel: 'marquee',
+      data: { text, is_active }
+    });
     toast('Running text berhasil disimpan!');
     document.getElementById('m-text').value = '';
     loadMarquee();
@@ -1290,18 +1297,17 @@ async function addMarquee() {
 }
 
 // ═══════════════════════════════════════════
-// BANNER
+// BANNER LOGIC
 // ═══════════════════════════════════════════
 async function loadBanner() {
   const body = document.getElementById('banner-body');
   try {
-    const { data, error } = await db.from('banner').select('*').order('sort_order', { ascending: true });
-    if (error) throw error;
-    if (!data?.length) {
+    const respon = await kirimRequest({ aksi: 'baca', tabel: 'banner', sortUrutan: true });
+    if (!respon.data?.length) {
       body.innerHTML = '<tr><td colspan="5"><div class="empty-state"><div class="ei">🖼️</div><div>Belum ada banner</div></div></td></tr>';
       return;
     }
-    body.innerHTML = data.map(r => `
+    body.innerHTML = respon.data.map(r => `
       <tr>
         <td>
           <img src="${r.image_url}" 
@@ -1320,7 +1326,7 @@ async function loadBanner() {
             <button class="btn btn-ghost btn-xs" onclick="toggleField('banner',${r.id},'is_active',${r.is_active},loadBanner)">
               ${r.is_active ? 'Nonaktifkan' : 'Aktifkan'}
             </button>
-            <button class="btn btn-danger btn-xs" onclick="deleteRow('banner',${r.id},'banner-body',loadBanner)">🗑</button>
+            <button class="btn btn-danger btn-xs" onclick="deleteRow('banner',${r.id},loadBanner)">🗑</button>
           </div>
         </td>
       </tr>`).join('');
@@ -1348,8 +1354,11 @@ async function addBanner() {
   setBtnLoading(btn, true, 'Menyimpan...');
 
   try {
-    const { error } = await db.from('banner').insert([{ image_url, alt_text, sort_order, is_active }]);
-    if (error) throw error;
+    await kirimRequest({
+      aksi: 'tambah',
+      tabel: 'banner',
+      data: { image_url, alt_text, sort_order, is_active }
+    });
     toast('Banner berhasil disimpan!');
     ['b-url','b-alt','b-order'].forEach(id => document.getElementById(id).value = '');
     document.getElementById('b-preview-wrap').style.display = 'none';
@@ -1363,25 +1372,38 @@ async function addBanner() {
 }
 
 // ═══════════════════════════════════════════
-// SHARED CRUD HELPERS
+// SHARED ACTION CRUD REFACTOR
 // ═══════════════════════════════════════════
-async function deleteRow(table, id, bodyId, reloadFn) {
+async function deleteRow(table, id, reloadFn) {
   if (!confirm('Yakin ingin menghapus data ini?')) return;
-  const { error } = await db.from(table).delete().eq('id', id);
-  if (error) return toast('Gagal hapus: ' + error.message, 'error');
-  toast('Data berhasil dihapus.');
-  reloadFn();
-  loadDashboard();
+  try {
+    await kirimRequest({ aksi: 'hapus', tabel: table, id: id });
+    toast('Data berhasil dihapus.');
+    reloadFn();
+    loadDashboard();
+  } catch (e) {
+    toast('Gagal hapus: ' + e.message, 'error');
+  }
 }
 
 async function toggleField(table, id, field, currentVal, reloadFn) {
-  const update = {};
-  update[field] = !currentVal;
-  const { error } = await db.from(table).update(update).eq('id', id);
-  if (error) return toast('Gagal update: ' + error.message, 'error');
-  toast('Status diperbarui.');
-  reloadFn();
-  loadDashboard();
+  try {
+    const dataUpdate = {};
+    dataUpdate[field] = !currentVal;
+    
+    await kirimRequest({
+      aksi: 'edit',
+      tabel: table,
+      id: id,
+      data: dataUpdate
+    });
+    
+    toast('Status diperbarui.');
+    reloadFn();
+    loadDashboard();
+  } catch (e) {
+    toast('Gagal update: ' + e.message, 'error');
+  }
 }
 
 function setBtnLoading(btn, isLoading, label) {
