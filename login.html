@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>RINJANI4D — Admin Login</title>
+    <script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
     <link href="https://images.linkcdn.cloud/V2/507/favicon/favicon-1888287302.png" rel="icon" type="image/png"/>
     <link href="https://fonts.googleapis.com/css2?family=Barlow:wght@400;600;700&display=swap" rel="stylesheet">
     <style>
@@ -71,7 +72,10 @@
 </div>
 
 <script>
-    // Cek jika token session sudah ada, langsung lempar ke admin.html
+    // Inisialisasi Supabase
+    const supabase = supabase.createClient('URL_SUPABASE_ANDA', 'ANON_KEY_ANDA');
+
+    // Cek session
     if (localStorage.getItem('supabase_admin_token')) {
         window.location.href = 'admin.html';
     }
@@ -85,34 +89,21 @@
 
         btn.disabled = true;
         btn.textContent = 'Memverifikasi...';
-        err.style.color = '#fc8181';
         err.style.display = 'none';
 
-       try {
-    // TAMBAHKAN 'const response = await' DI DEPAN FETCH:
-    const response = await fetch('/.netlify/functions/simpan-data', {
-        method: 'POST',
-        headers: { 'Content-Type': 'application/json' },
-        body: JSON.stringify({ 
-            aksi: 'login_auth', 
-            email: email, 
-            password: password 
-        })
-    });
+        try {
+            const { data, error } = await supabase.auth.signInWithPassword({
+                email: email,
+                password: password
+            });
 
-    const hasil = await response.json();
+            if (error) throw error;
 
-            if (!response.ok) {
-                throw new Error(hasil.error || 'Email atau password salah.');
-            }
-
-            // Jika Supabase menyatakan user valid, simpan token akses ke localStorage
             err.textContent = '✅ Login Sukses! Mengalihkan...';
             err.style.color = '#68d391';
             err.style.display = 'block';
             
-            // Simpan access token panggung belakang ke panggung depan
-            localStorage.setItem('supabase_admin_token', hasil.token);
+            localStorage.setItem('supabase_admin_token', data.session.access_token);
 
             setTimeout(() => {
                 window.location.href = 'admin.html';
