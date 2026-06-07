@@ -58,33 +58,30 @@
     
     <form id="loginForm">
         <div class="form-group">
-            <label>Kata Sandi Akses</label>
-            <input type="password" id="password" placeholder="Masukkan password admin..." required autocomplete="current-password">
+            <label>Email Admin</label>
+            <input type="email" id="email" placeholder="admin@rinjani4d.com" required autocomplete="username">
+        </div>
+        <div class="form-group">
+            <label>Password</label>
+            <input type="password" id="password" placeholder="••••••••" required autocomplete="current-password">
         </div>
         <button type="submit" id="btnLogin">MASUK PANEL</button>
-        <div class="error-msg" id="errorMsg">Password salah atau akses ditolak!</div>
+        <div class="error-msg" id="errorMsg">Email atau password salah!</div>
     </form>
 </div>
 
 <script>
-    const API_URL = '/api/simpan-data';
-
-    // Cek jika sudah login sebelumnya (ada token di localStorage), langsung lempar ke admin.html
-    function checkDirect() {
-        if (localStorage.getItem('admin_session')) {
-            window.location.href = 'admin.html';
-        }
+    // Cek jika token session sudah ada, langsung lempar ke admin.html
+    if (localStorage.getItem('supabase_admin_token')) {
+        window.location.href = 'admin.html';
     }
-    checkDirect();
 
-    // Proses Handler Login Baru Menembak ke Netlify Backend
     document.getElementById('loginForm').addEventListener('submit', async (e) => {
         e.preventDefault();
-        const password = document.getElementById('password').value.trim();
+        const email = document.getElementById('email').value.trim();
+        const password = document.getElementById('password').value;
         const btn = document.getElementById('btnLogin');
         const err = document.getElementById('errorMsg');
-
-        if (!password) return;
 
         btn.disabled = true;
         btn.textContent = 'Memverifikasi...';
@@ -92,30 +89,31 @@
         err.style.display = 'none';
 
         try {
-            // Mengirim request 'cek' untuk memvalidasi password di panggung belakang Netlify
-            const response = await fetch(API_URL, {
+            // Kita tembak ke Netlify Function perantara untuk memverifikasi Auth Supabase secara aman
+            const response = await fetch('/api/simpan-data', {
                 method: 'POST',
-                headers: {
-                    'Content-Type': 'application/json',
-                    'X-Admin-Password': password
-                },
-                body: JSON.stringify({ aksi: 'cek' })
+                headers: { 'Content-Type': 'application/json' },
+                body: JSON.stringify({ 
+                    aksi: 'login_auth', 
+                    email: email, 
+                    password: password 
+                })
             });
 
             const hasil = await response.json();
 
             if (!response.ok) {
-                throw new Error(hasil.error || 'Password salah atau akses ditolak.');
+                throw new Error(hasil.error || 'Email atau password salah.');
             }
 
-            // Jika sukses lolos dari backend, simpan ke session panggung depan
-            err.textContent = '✅ Akses diterima! Mengalihkan...';
+            // Jika Supabase menyatakan user valid, simpan token akses ke localStorage
+            err.textContent = '✅ Login Sukses! Mengalihkan...';
             err.style.color = '#68d391';
             err.style.display = 'block';
             
-            localStorage.setItem('admin_session', password);
+            // Simpan access token panggung belakang ke panggung depan
+            localStorage.setItem('supabase_admin_token', hasil.token);
 
-            // Beri jeda 1 detik untuk transisi visual yang halus sebelum pindah halaman
             setTimeout(() => {
                 window.location.href = 'admin.html';
             }, 1000);
