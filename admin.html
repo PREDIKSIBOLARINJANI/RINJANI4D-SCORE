@@ -4,9 +4,8 @@
 <meta charset="UTF-8">
 <meta name="viewport" content="width=device-width, initial-scale=1.0">
 <title>Admin Panel — RINJANI4D</title>
-  <link href="https://images.linkcdn.cloud/V2/507/favicon/favicon-1888287302.png" rel="icon" type="image/png"/>
+<link href="https://images.linkcdn.cloud/V2/507/favicon/favicon-1888287302.png" rel="icon" type="image/png"/>
 <link href="https://fonts.googleapis.com/css2?family=Barlow+Condensed:wght@700;800&family=Barlow:wght@400;500;600;700&display=swap" rel="stylesheet">
-<script src="https://cdn.jsdelivr.net/npm/@supabase/supabase-js@2"></script>
 <style>
   :root {
     --gold: #ffd700;
@@ -251,37 +250,6 @@
   .form-group select option { background: #1a1a1a; }
   .form-group textarea { resize: vertical; min-height: 80px; }
 
-  /* File upload style */
-  .file-upload-area {
-    border: 2px dashed rgba(255,215,0,0.25);
-    border-radius: 8px;
-    padding: 14px;
-    text-align: center;
-    cursor: pointer;
-    transition: border-color 0.2s, background 0.2s;
-    background: var(--surface2);
-    position: relative;
-  }
-  .file-upload-area:hover { border-color: var(--gold); background: var(--gold-dim); }
-  .file-upload-area input[type="file"] {
-    position: absolute; inset: 0; opacity: 0; cursor: pointer; width: 100%; height: 100%;
-  }
-  .file-upload-label { font-size: 12px; color: var(--text-muted); pointer-events: none; }
-  .file-upload-label span { color: var(--gold); font-weight: 700; }
-  .logo-preview-wrap { margin-top: 8px; display: flex; align-items: center; gap: 8px; }
-  .logo-preview-img {
-    width: 40px; height: 40px;
-    object-fit: contain;
-    border-radius: 6px;
-    border: 1px solid var(--gold-border);
-    background: rgba(255,255,255,0.05);
-    display: none;
-  }
-  .logo-preview-name { font-size: 11px; color: var(--text-muted); }
-
-  /* Custom league input */
-  .custom-league-wrap { margin-top: 8px; display: none; }
-
   /* ── BUTTONS ── */
   .btn {
     padding: 10px 18px;
@@ -306,6 +274,19 @@
   .btn-sm { padding: 7px 13px; font-size: 12px; }
   .btn-xs { padding: 5px 10px; font-size: 11px; }
   .btn:disabled { opacity: 0.45; cursor: not-allowed; transform: none !important; }
+  
+  .btn-logout {
+    background: rgba(229, 62, 62, 0.1);
+    color: #fc8181;
+    border: 1px solid rgba(229, 62, 62, 0.2);
+    padding: 8px 14px;
+    border-radius: 6px;
+    font-size: 12px;
+    font-weight: 600;
+    cursor: pointer;
+    transition: all 0.2s;
+  }
+  .btn-logout:hover { background: var(--danger); color: #fff; }
 
   /* ── TABLE ── */
   .table-wrap { overflow-x: auto; border-radius: 8px; }
@@ -446,50 +427,7 @@
   }
   .empty-state .ei { font-size: 32px; margin-bottom: 8px; }
 
-  /* ── LOGIN ── */
-  #login-screen {
-    position: fixed; inset: 0;
-    background: var(--bg);
-    display: flex;
-    align-items: center;
-    justify-content: center;
-    z-index: 9999;
-    background-image: radial-gradient(ellipse at 50% 0%, rgba(255,215,0,0.04) 0%, transparent 70%);
-  }
-  .login-box {
-    background: var(--surface);
-    border: 1px solid var(--gold-border);
-    border-radius: 20px;
-    padding: 44px 36px;
-    width: 340px;
-    text-align: center;
-  }
-  .login-box img { height: 46px; margin-bottom: 22px; }
-  .login-box h2 {
-    font-family: 'Barlow Condensed', sans-serif;
-    font-size: 22px;
-    color: var(--gold);
-    margin-bottom: 4px;
-    letter-spacing: 1px;
-  }
-  .login-box p { font-size: 13px; color: var(--text-muted); margin-bottom: 26px; }
-  .login-box input {
-    width: 100%;
-    background: var(--surface2);
-    border: 1px solid rgba(255,255,255,0.1);
-    border-radius: 8px;
-    padding: 12px;
-    color: var(--text);
-    font-size: 14px;
-    text-align: center;
-    outline: none;
-    margin-bottom: 14px;
-    transition: border-color 0.2s;
-  }
-  .login-box input:focus { border-color: var(--gold); }
-  #login-err { color: var(--danger); font-size: 13px; margin-top: 8px; min-height: 18px; }
-
-  /* ── HAMBURGER ── */
+  /* ── HAMBURGER & OVERLAY ── */
   .hamburger {
     display: none;
     background: none;
@@ -522,13 +460,11 @@
   }
   @media (max-width: 480px) {
     .stats-grid { grid-template-columns: 1fr; }
-    .login-box { width: 90%; padding: 32px 24px; }
   }
 </style>
 </head>
 <body>
 
-<!-- SIDEBAR -->
 <aside class="sidebar" id="sidebar">
   <div class="sidebar-logo">
     <img src="https://i.imgur.com/DuwlIfJ.png" alt="Logo">
@@ -559,7 +495,6 @@
   </div>
 </aside>
 
-<!-- MAIN -->
 <div class="main">
   <div class="topbar">
     <div class="topbar-left">
@@ -570,14 +505,12 @@
       <div class="status-pill">
         <div class="status-dot"></div>Live
       </div>
-     <button class="btn-logout" onclick="handleLogout()"> Keluar Panel</button>
-
+      <button class="btn-logout" onclick="handleLogout()">Keluar Panel</button>
     </div>
   </div>
 
   <div class="content">
 
-    <!-- ═══ DASHBOARD ═══ -->
     <div class="page active" id="page-dashboard">
       <div class="stats-grid">
         <div class="stat-card">
@@ -609,37 +542,34 @@
       </div>
     </div>
 
-    <!-- ═══ JADWAL ═══ -->
     <div class="page" id="page-jadwal">
       <div class="card">
         <div class="card-header">
           <div class="card-title">➕ Tambah Jadwal</div>
         </div>
 
-        <!-- Row 1: Waktu & Liga -->
-  <div class="form-group">
-  <label>Hari, Tanggal & Waktu (WIB)</label>
-  <input type="text" id="j-time" placeholder="Contoh: Sabtu, 06 Jun - 22:00 WIB" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; color:#fff; border-radius:6px; font-size:14px;">
-</div>
-          <div class="form-group">
-            <label>Liga</label>
-            <select id="j-league" onchange="handleLeagueChange('j')">
-              <option value="EPL">EPL</option>
-              <option value="UCL">UCL</option>
-              <option value="LIGA 1">LIGA 1</option>
-              <option value="LALIGA">LALIGA</option>
-              <option value="SERIE A">SERIE A</option>
-              <option value="BUNDESLIGA">BUNDESLIGA</option>
-              <option value="LIGUE 1">LIGUE 1</option>
-              <option value="CUSTOM">-- Tulis Liga Baru --</option>
-            </select>
-            <div class="custom-league-wrap" id="j-custom-wrap">
-              <input type="text" id="j-custom-league" placeholder="Tulis nama liga... (misal: EURO 2026)">
-            </div>
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label>Hari, Tanggal & Waktu (WIB)</label>
+          <input type="text" id="j-time" placeholder="Contoh: Sabtu, 06 Jun - 22:00 WIB">
+        </div>
+        
+        <div class="form-group" style="margin-bottom: 14px;">
+          <label>Liga</label>
+          <select id="j-league" onchange="handleLeagueChange('j')">
+            <option value="EPL">EPL</option>
+            <option value="UCL">UCL</option>
+            <option value="LIGA 1">LIGA 1</option>
+            <option value="LALIGA">LALIGA</option>
+            <option value="SERIE A">SERIE A</option>
+            <option value="BUNDESLIGA">BUNDESLIGA</option>
+            <option value="LIGUE 1">LIGUE 1</option>
+            <option value="CUSTOM">-- Tulis Liga Baru --</option>
+          </select>
+          <div class="custom-league-wrap" id="j-custom-wrap">
+            <input type="text" id="j-custom-league" placeholder="Tulis nama liga... (misal: EURO 2026)">
           </div>
         </div>
 
-        <!-- Row 2: Pertandingan & Peluang -->
         <div class="form-grid form-grid-2">
           <div class="form-group">
             <label>Pertandingan</label>
@@ -653,20 +583,16 @@
 
         <div class="section-divider"><span>Logo Tim (Opsional)</span></div>
 
-        <!-- Row 3: Logo Upload -->
         <div class="form-grid form-grid-2">
           <div class="form-group">
-            <label>URL Logo Tim Tuan Rumah (Opsional)</label>
-            <input type="text" id="j-home-b64" placeholder="Contoh: https://site.com/logo-home.png" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; color:#fff; border-radius:6px; font-size:14px;">
+            <label>URL Logo Tim Tuan Rumah</label>
+            <input type="text" id="j-home-logo" placeholder="Contoh: https://site.com/logo-home.png">
           </div>
           <div class="form-group">
-            <label>URL Logo Tim Tamu (Opsional)</label>
-            <input type="text" id="j-away-b64" placeholder="Contoh: https://site.com/logo-away.png" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; color:#fff; border-radius:6px; font-size:14px;">
+            <label>URL Logo Tim Tamu</label>
+            <input type="text" id="j-away-logo" placeholder="Contoh: https://site.com/logo-away.png">
           </div>
         </div>
-        <!-- Hidden b64 holders -->
-        <input type="hidden" id="j-home-b64">
-        <input type="hidden" id="j-away-b64">
 
         <div style="margin-top:16px;">
           <button class="btn btn-primary" id="btn-add-jadwal" onclick="addJadwal()">➕ Simpan Jadwal</button>
@@ -699,14 +625,12 @@
       </div>
     </div>
 
-    <!-- ═══ HASIL ═══ -->
     <div class="page" id="page-hasil">
       <div class="card">
         <div class="card-header">
           <div class="card-title">➕ Tambah PREDIKSI SKOR AKURAT</div>
         </div>
 
-        <!-- Row 1: Liga & Skor -->
         <div class="form-grid form-grid-2">
           <div class="form-group">
             <label>Liga</label>
@@ -733,7 +657,7 @@
         <div class="form-grid form-grid-1" style="margin-top: 12px;">
           <div class="form-group">
             <label>Waktu & Tanggal Pertandingan Selesai (WIB)</label>
-            <input type="text" id="h-time" placeholder="Contoh: Sabtu, 06 Jun - 22:00 WIB" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; color:#fff; border-radius:6px; font-size:14px;">
+            <input type="text" id="h-time" placeholder="Contoh: Sabtu, 06 Jun - 22:00 WIB">
           </div>
         </div>
 
@@ -745,7 +669,7 @@
           </div>
           <div class="form-group">
             <label>URL Logo Tim Tuan Rumah (Opsional)</label>
-            <input type="text" id="h-home-b64" placeholder="Contoh: https://site.com/logo-home.png" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; color:#fff; border-radius:6px; font-size:14px;">
+            <input type="text" id="h-home-logo" placeholder="Contoh: https://site.com/logo-home.png">
           </div>
         </div>
 
@@ -757,12 +681,9 @@
           </div>
           <div class="form-group">
             <label>URL Logo Tim Tamu (Opsional)</label>
-            <input type="text" id="h-away-b64" placeholder="Contoh: https://site.com/logo-away.png" style="width:100%; padding:12px; background:#1e1e1e; border:1px solid #333; color:#fff; border-radius:6px; font-size:14px;">
+            <input type="text" id="h-away-logo" placeholder="Contoh: https://site.com/logo-away.png">
           </div>
         </div>
-
-        <input type="hidden" id="h-home-b64">
-        <input type="hidden" id="h-away-b64">
 
         <div style="margin-top:16px;">
           <button class="btn btn-primary" id="btn-add-hasil" onclick="addHasil()">➕ Simpan Hasil</button>
@@ -794,7 +715,6 @@
       </div>
     </div>
 
-    <!-- ═══ MARQUEE ═══ -->
     <div class="page" id="page-marquee">
       <div class="card">
         <div class="card-header">
@@ -834,7 +754,6 @@
       </div>
     </div>
 
-    <!-- ═══ BANNER ═══ -->
     <div class="page" id="page-banner">
       <div class="card">
         <div class="card-header">
@@ -865,7 +784,7 @@
           <button class="btn btn-ghost btn-sm" onclick="previewBanner()">👁 Preview Gambar</button>
         </div>
         <div id="b-preview-wrap" style="display:none;margin-bottom:14px;">
-          <img id="b-preview" style="max-width:280px;border-radius:8px;border:1px solid var(--gold-border);">
+          <img id="b-preview" style="max-width:280px;border-radius:8px;border:1px solid var(--gold-border);" alt="Preview">
         </div>
         <button class="btn btn-primary" id="btn-add-banner" onclick="addBanner()">➕ Simpan Banner</button>
       </div>
@@ -888,8 +807,7 @@
       </div>
     </div>
 
-  </div><!-- /content -->
-</div><!-- /main -->
+  </div></div><div id="overlay" class="overlay" onclick="closeSidebar()"></div>
 
 <div id="toast-container"></div>
 
@@ -899,20 +817,19 @@
 // ═══════════════════════════════════════════
 const API_URL = '/api/simpan-data';
 
-// Proteksi Halaman Admin: Cek password dari localStorage
+// Proteksi Halaman Admin: Cek token sesi dari localStorage
 function checkAuth() {
-  const adminPass = localStorage.getItem('admin_session');
+  const adminToken = localStorage.getItem('admin_session');
   
-  // Jika token password belum tersimpan, tendang langsung ke login.html
-  if (!adminPass) {
+  // Jika token acak aman belum ada, lempar ke login.html
+  if (!adminToken) {
     window.location.href = 'login.html';
   } else {
-    // Jika ada session, jalankan aplikasi admin
     initApp();
   }
 }
 
-// Jalankan proteksi keamanan secara langsung
+// Jalankan sistem keamanan otomatis
 checkAuth();
 
 // Fungsi Keluar Panel (Logout)
@@ -921,15 +838,15 @@ function handleLogout() {
   window.location.href = 'login.html';
 }
 
-// Helper untuk mengirim request ke Netlify Function panggung belakang
+// Helper pengirim data aman ke Netlify Backend Function
 async function kirimRequest(payload) {
-  const adminPass = localStorage.getItem('admin_session');
+  const adminToken = localStorage.getItem('admin_session');
   
   const response = await fetch(API_URL, {
     method: 'POST',
     headers: {
       'Content-Type': 'application/json',
-      'X-Admin-Password': adminPass // Mengirim password untuk divalidasi di panggung belakang
+      'X-Admin-Password': adminToken // Mengirim session token resmi untuk divalidasi backend
     },
     body: JSON.stringify(payload)
   });
@@ -956,7 +873,6 @@ async function initApp() {
 async function checkDb() {
   const el = document.getElementById('db-status');
   try {
-    // Tes koneksi dengan membaca data jadwal (limit 1) lewat backend
     await kirimRequest({ aksi: 'baca', tabel: 'jadwal', limit: 1 });
     el.textContent = '✅ Terhubung via API';
     el.style.color = '#68d391';
@@ -1055,7 +971,6 @@ function leagueBadge(league) {
 // ═══════════════════════════════════════════
 async function loadDashboard() {
   try {
-    // Ambil data dashboard secara paralel lewat API panggung belakang
     const [j, h, m, b, recent] = await Promise.all([
       kirimRequest({ aksi: 'hitung', tabel: 'jadwal' }),
       kirimRequest({ aksi: 'hitung', tabel: 'hasil' }),
@@ -1126,12 +1041,12 @@ async function loadJadwal() {
 }
 
 async function addJadwal() {
-  const time       = document.getElementById('j-time').value;
+  const time       = document.getElementById('j-time').value.trim();
   const league     = getLeagueValue('j');
   const match_name = document.getElementById('j-match').value.trim();
   const prob       = document.getElementById('j-prob').value.trim();
-  const home_logo  = document.getElementById('j-home-b64').value || null;
-  const away_logo  = document.getElementById('j-away-b64').value || null;
+  const home_logo  = document.getElementById('j-home-logo').value.trim() || null;
+  const away_logo  = document.getElementById('j-away-logo').value.trim() || null;
 
   if (!time)       return toast('Waktu wajib diisi!', 'error');
   if (!league)     return toast('Nama liga wajib diisi!', 'error');
@@ -1159,7 +1074,7 @@ async function addJadwal() {
 }
 
 function resetJadwalForm() {
-  ['j-time','j-match','j-prob','j-custom-league','j-home-b64','j-away-b64'].forEach(id => {
+  ['j-time','j-match','j-prob','j-custom-league','j-home-logo','j-away-logo'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
@@ -1194,19 +1109,19 @@ async function loadHasil() {
 }
 
 async function addHasil() {
-  const league    = getLeagueValue('h');
-  const home      = document.getElementById('h-home').value.trim();
-  const away      = document.getElementById('h-away').value.trim();
-  const score     = document.getElementById('h-score').value.trim();
+  const league     = getLeagueValue('h');
+  const home       = document.getElementById('h-home').value.trim();
+  const away       = document.getElementById('h-away').value.trim();
+  const score      = document.getElementById('h-score').value.trim();
   const match_time = document.getElementById('h-time').value.trim();
-  const home_logo = document.getElementById('h-home-b64').value || null;
-  const away_logo = document.getElementById('h-away-b64').value || null;
+  const home_logo  = document.getElementById('h-home-logo').value.trim() || null;
+  const away_logo  = document.getElementById('h-away-logo').value.trim() || null;
 
-  if (!league) return toast('Nama liga wajib diisi!', 'error');
-  if (!score)  return toast('Skor wajib diisi!', 'error');
+  if (!league)     return toast('Nama liga wajib diisi!', 'error');
+  if (!score)      return toast('Skor wajib diisi!', 'error');
   if (!match_time) return toast('Waktu & tanggal wajib diisi!', 'error');
-  if (!home)   return toast('Nama tim tuan rumah wajib diisi!', 'error');
-  if (!away)   return toast('Nama tim tamu wajib diisi!', 'error');
+  if (!home)       return toast('Nama tim tuan rumah wajib diisi!', 'error');
+  if (!away)       return toast('Nama tim tamu wajib diisi!', 'error');
 
   const btn = document.getElementById('btn-add-hasil');
   setBtnLoading(btn, true, 'Menyimpan...');
@@ -1228,19 +1143,18 @@ async function addHasil() {
   }
 }
 
+// ═══════════════════════════════════════════
+// MARQUEE LOGIC
+// ═══════════════════════════════════════════
 function resetHasilForm() {
-  ['h-home','h-away','h-score','h-custom-league','h-home-b64','h-away-b64'].forEach(id => {
+  ['h-home','h-away','h-score','h-custom-league','h-home-logo','h-away-logo','h-time'].forEach(id => {
     const el = document.getElementById(id);
     if (el) el.value = '';
   });
   document.getElementById('h-league').value = 'EPL';
   document.getElementById('h-custom-wrap').style.display = 'none';
-  document.getElementById('h-time').value = '';
 }
 
-// ═══════════════════════════════════════════
-// MARQUEE LOGIC
-// ═══════════════════════════════════════════
 async function loadMarquee() {
   const body = document.getElementById('marquee-body');
   try {
@@ -1312,7 +1226,7 @@ async function loadBanner() {
         <td>
           <img src="${r.image_url}" 
                style="width:90px;height:50px;object-fit:cover;border-radius:6px;border:1px solid var(--gold-border);" 
-               onerror="this.replaceWith(document.createTextNode('⚠️ Error'))">
+               onerror="this.replaceWith(document.createTextNode('⚠️ Error'))" alt="Banner">
         </td>
         <td style="max-width:160px;word-break:break-word;font-size:13px;">${r.alt_text || '—'}</td>
         <td style="text-align:center;font-weight:700;">${r.sort_order}</td>
