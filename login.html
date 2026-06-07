@@ -90,7 +90,7 @@
 
         try {
             // Kita tembak ke Netlify Function perantara untuk memverifikasi Auth Supabase secara aman
-            const response = await fetch('/api/simpan-data', {
+            fetch('/.netlify/functions/simpan-data', {
                 method: 'POST',
                 headers: { 'Content-Type': 'application/json' },
                 body: JSON.stringify({ 
