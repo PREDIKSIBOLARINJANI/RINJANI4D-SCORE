@@ -1,0 +1,9 @@
+{
+  "name": "rinjani4d-score",
+  "version": "1.0.0",
+  "description": "Jembatan Aman Score Bola",
+  "main": "index.html",
+  "dependencies": {
+    "@supabase/supabase-js": "^2.39.0"
+  }
+}
